@@ -1,16 +1,33 @@
-# This is a sample Python script.
+import pygame
+from checkers.constants import *
+from checkers.Board import Board
+from checkers.Player import Player
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+FPS = 60
+
+def main():
+    pygame.init()
+    window = pygame.display.set_mode([WINDOW_WIDTH, WINDOW_HEIGHT])
+    clock = pygame.time.Clock()
+
+    running = True
+    while running:
+        clock.tick(FPS)
+        board = Board()
+
+        board.draw_background(window)
+        board.draw_pieces(window)
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pass
+
+    pygame.quit()
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    main()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
