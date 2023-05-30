@@ -3,6 +3,10 @@ from checkers.constants import *
 from checkers.Board import Board
 from checkers.Game import Game
 
+#temporary
+from checkers.Piece import Piece
+from checkers.Player import Player
+
 FPS = 60
 
 def get_piece_pos_from_mouse_pos(pos):

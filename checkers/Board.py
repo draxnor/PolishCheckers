@@ -2,6 +2,7 @@ import pygame
 from .constants import *
 from .Piece import Piece
 from .Player import Player
+from .Move import Move
 
 class Board():
     def __init__(self):
@@ -75,23 +76,101 @@ class Board():
                 moves.update(self.get_possible_noncapture_moves_for_man(piece))
         return moves
 
-    def get_possible_captures_for_king(self, piece):
-        pass
-
-    def get_possible_noncapture_moves_for_man(self, piece):
+    def get_possible_noncapture_moves_for_man(self, piece: Piece) -> list[Move]:
         list_of_moves = []
         left_col = piece.col - 1
         right_col = piece.col + 1
         if piece.player == Player.PLAYER_TOP:
             target_row = piece.row + 1
-        if piece.player == Player.PLAYER_BOTTOM:
+        else: #piece.player == Player.PLAYER_BOTTOM:
             target_row = piece.row - 1
-        if target_row >= 0 and target_row < ROWS:
-            if left_col >= 0:
+        if 0 <= target_row < ROWS:
+            if 0 <= left_col:
                 if self.board[target_row][left_col] == 0:
-                    list_of_moves.append((target_row, left_col))
-                #check if empty field
-            if right_col < ROWS:
+                    list_of_moves.append(Move(piece.row, piece.col, target_row, left_col))
+            if right_col < COLUMNS:
                 if self.board[target_row][right_col] == 0:
-                    list_of_moves.append((target_row, right_col))
-        moves = {0: list_of_moves}
+                    list_of_moves.append(Move(piece.row, piece.col, target_row, right_col))
+        return list_of_moves
+
+    def _is_out_of_bound(self, row, col):
+        if row < 0 or row >= ROWS:
+            return True
+        if col < 0 or col >= COLUMNS:
+            return True
+        return False
+
+    def get_possible_captures_for_man_from_field(self, piece, row, col, captured_pieces=[]):
+        possible_sequences = []
+        # for every diagonal
+        for horizontal_step in (-1, 1):
+            for vertical_step in (-1, 1):
+                row_after_capture = row+2*vertical_step
+                col_after_capture = col+2*horizontal_step
+                # if there is a space (2 fields) for capture in that direction
+                if not self._is_out_of_bound(row_after_capture, col_after_capture):
+                    neighboring_field_content = self.get_piece(row+vertical_step, col+horizontal_step)
+                    # if field next to piece is a piece,
+                    # belongs to opponent and was not already captured in current sequence
+                    if isinstance(neighboring_field_content, Piece):
+                        if neighboring_field_content.is_rival_piece(piece) and \
+                                neighboring_field_content not in captured_pieces:
+                            field_behind_rival_piece_content = self.get_piece(row_after_capture, col_after_capture)
+                            # if field behind rival piece is empty or would be empty after moving current piece
+                            # (can happen after multiple captures)
+                            if field_behind_rival_piece_content == 0 or field_behind_rival_piece_content == piece:
+                                # copy list and add element
+                                current_move = Move(row, col, row_after_capture, col_after_capture, neighboring_field_content)
+                                # copy list as it is needed for next iteration and add element
+                                captured_pieces_updated = captured_pieces + [neighboring_field_content]
+                                # pass captures from current sequence including that from current move
+                                continuation_sequences = self.get_possible_captures_for_man_from_field\
+                                    (piece, row_after_capture, col_after_capture, captured_pieces_updated)
+
+                                if not continuation_sequences:
+                                    possible_sequences.append([current_move])
+                                else:
+                                    for seq in continuation_sequences:
+                                        seq.append(current_move)
+                                        possible_sequences.append(seq)
+        return possible_sequences
+
+    def get_possible_captures_for_king(self, piece, row, col, captured_pieces=[]):
+        possible_sequences = []
+        # for every diagonal
+        for horizontal_step in (-1, 1):
+            for vertical_step in (-1, 1):
+                row_examined = row + vertical_step
+                col_examined = col + horizontal_step
+                while 0 < row_examined < ROWS-1 and 0 < col_examined < COLUMNS-1:
+                    field_content = self.get_piece(row_examined, col_examined)
+                    if not isinstance(field_content, Piece):
+                        continue
+                    if not field_content.is_rival_piece(piece):
+                        break
+                    field_behind_rival_piece_content = \
+                        self.get_piece(row_examined + vertical_step, col_examined + horizontal_step)
+                    if field_behind_rival_piece_content != 0:
+                        break
+                    # it is rival piece on diagonal and there is at least 1 free field behind piece,
+                    # it means that piece capturing is possible
+
+                    # TODO
+                    # Follow idea from function 'get_possible_captures_for_man_from_field'
+                    # current_move = Move(row, col, row_after_capture, col_after_capture, neighboring_field_content)
+                    # captured_pieces_updated = captured_pieces + [neighboring_field_content]
+                    # continuation_sequences = self.get_possible_captures_for_man_from_field\
+                    #     (piece, row_after_capture, col_after_capture, captured_pieces_updated)
+                    #
+                    # if not continuation_sequences:
+                    #     possible_sequences.append([current_move])
+                    # else:
+                    #     for seq in continuation_sequences:
+                    #         seq.append(current_move)
+                    #         possible_sequences.append(seq)
+
+
+                    row_examined += vertical_step
+                    col_examined += horizontal_step
+
+        return possible_sequences

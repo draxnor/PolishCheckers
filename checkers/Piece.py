@@ -42,6 +42,6 @@ class Piece:
         else:
             piece_info = 'M'
 
-        player_info = str(self.player.value) + 'P'
-        representation = str((self.row,self.col))+'('+piece_info+'_'+player_info+')'
+        player_info =  'P' + str(self.player.value)
+        representation = str((self.row,self.col)) + '(' + piece_info + '_' + player_info + ')'
         return representation
