@@ -2,5 +2,5 @@ from enum import Enum
 
 
 class Player(Enum):
-    PLAYER1 = 1
-    PLAYER2 = 2
+    PLAYER_TOP = 1
+    PLAYER_BOTTOM = 2

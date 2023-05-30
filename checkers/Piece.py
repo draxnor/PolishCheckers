@@ -1,18 +1,19 @@
 import pygame
 from .constants import SQUARE_HEIGHT, SQUARE_WIDTH, \
-    PLAYER1_COLOR, PLAYER2_COLOR, PIECE_RADIUS, CROWN_COLOR
+    PLAYER_TOP_COLOR, PLAYER_BOTTOM_COLOR, PIECE_RADIUS, CROWN_COLOR, \
+    ROWS, COLUMNS
 from .Player import Player
 
 
 class Piece:
-    def __init__(self, row, col, player):
+    def __init__(self, row, col, player: Player):
         self.row = row
         self.col = col
         self.player = player
-        if player == Player.PLAYER1:
-            self.color = PLAYER1_COLOR
-        elif player == Player.PLAYER2:
-            self.color = PLAYER2_COLOR
+        if player == Player.PLAYER_TOP:
+            self.color = PLAYER_TOP_COLOR
+        elif player == Player.PLAYER_BOTTOM:
+            self.color = PLAYER_BOTTOM_COLOR
         self.is_king = False
 
     def get_position(self): # center of the square
@@ -23,13 +24,17 @@ class Piece:
     def promote_piece(self):
         self.is_king = True
 
-    def get_possible_moves(self):
-        pass
+    def move(self, row, col):
+        self.row = row
+        self.col = col
 
     def draw(self, window):
         pygame.draw.circle(window, self.color, self.get_position(), PIECE_RADIUS)
         if self.is_king:
             pygame.draw.circle(window, CROWN_COLOR, self.get_position(), PIECE_RADIUS//2)
+
+    def is_rival_piece(self, piece):
+        return self.player != piece.player
 
     def __repr__(self):
         if self.is_king is True:
