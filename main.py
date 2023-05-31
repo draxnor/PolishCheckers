@@ -27,12 +27,15 @@ def main():
         clock.tick(FPS)
 
         game.update()
+        game.board.board[4][5] = Piece(4,5,Player.PLAYER_BOTTOM)
+        game.change_turn()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
-
+                row, col = get_piece_pos_from_mouse_pos(mouse_pos)
+                game.select(row,col)
     pygame.quit()
 
 

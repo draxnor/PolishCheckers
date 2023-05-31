@@ -21,6 +21,12 @@ class Move:
                self.captured_piece.row == other.captured_piece.row and \
                self.captured_piece.col == other.captured_piece.col and \
                self.captured_piece.player == other.captured_piece.player
+
+    @property
+    def destination(self):
+        return self.target_row, self.target_col
+
+
 # class MoveSequence:
-#     def __init__(self):
+#      def __init__(self):
 #         current_move

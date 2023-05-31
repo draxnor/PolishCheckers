@@ -31,7 +31,7 @@ class Board():
         window.fill(BLACK)
         for row in range(ROWS):
             for col in range(COLUMNS):
-                if (row%2 == 0 and col%2 == 0) or (row%2 != 0 and col%2 != 0):
+                if (row % 2 == 0 and col % 2 == 0) or (row % 2 != 0 and col % 2 != 0):
                     pygame.draw.rect(window, WHITE,
                                      pygame.Rect((row*SQUARE_WIDTH, col*SQUARE_HEIGHT), (SQUARE_WIDTH, SQUARE_HEIGHT)))
 
@@ -40,6 +40,7 @@ class Board():
             for col in range(COLUMNS):
                 if isinstance(self.board[row][col], Piece):
                     self.board[row][col].draw(window)
+
 
     def create_board(self):
         for row in range(ROWS):
@@ -60,20 +61,18 @@ class Board():
         #     raise IndexError('There is no piece at passed index.')
         return self.board[row][col]
 
-
     def get_valid_moves_of_piece(self, piece: Piece):
-        moves = {}
-        #look for captures first
-        #if capture possible, leave only those with the highest possible capture count
-        #if captures impossible, leave only normal moves
-        if piece.is_king == True:
-            moves.update(self.get_possible_captures_for_king(piece))
+        # look for captures first
+        # if capture possible, leave only those with the highest possible capture count
+        # if captures impossible, leave only normal moves
+        if piece.is_king:
+            moves = self.get_possible_captures_for_king(piece, piece.row, piece.col)
             if not moves:
-                moves.update(self.get_possible_noncapture_moves_for_king(piece))
+                moves = self.get_possible_noncapture_moves_for_king(piece)
         else:
-            moves.update(self.get_possible_captures_for_man(piece))
+            moves = self.get_possible_captures_for_man_from_field(piece, piece.row, piece.col)
             if not moves:
-                moves.update(self.get_possible_noncapture_moves_for_man(piece))
+                moves = self.get_possible_noncapture_moves_for_man(piece)
         return moves
 
     def get_possible_noncapture_moves_for_man(self, piece: Piece) -> list[Move]:
@@ -82,23 +81,21 @@ class Board():
         right_col = piece.col + 1
         if piece.player == Player.PLAYER_TOP:
             target_row = piece.row + 1
-        else: #piece.player == Player.PLAYER_BOTTOM:
+        else: # piece.player == Player.PLAYER_BOTTOM:
             target_row = piece.row - 1
         if 0 <= target_row < ROWS:
             if 0 <= left_col:
                 if self.board[target_row][left_col] == 0:
-                    list_of_moves.append(Move(piece.row, piece.col, target_row, left_col))
+                    list_of_moves.append([Move(piece.row, piece.col, target_row, left_col)])
             if right_col < COLUMNS:
                 if self.board[target_row][right_col] == 0:
-                    list_of_moves.append(Move(piece.row, piece.col, target_row, right_col))
+                    list_of_moves.append([Move(piece.row, piece.col, target_row, right_col)])
         return list_of_moves
 
     def _is_out_of_bound(self, row, col):
-        if row < 0 or row >= ROWS:
-            return True
-        if col < 0 or col >= COLUMNS:
-            return True
-        return False
+        if 0 <= row < ROWS and 0 <= col < COLUMNS:
+            return False
+        return True
 
     def get_possible_captures_for_man_from_field(self, piece, row, col, captured_pieces=[]):
         possible_sequences = []
@@ -121,9 +118,11 @@ class Board():
                             if field_behind_rival_piece_content == 0 or field_behind_rival_piece_content == piece:
                                 # copy list and add element
                                 current_move = Move(row, col, row_after_capture, col_after_capture, neighboring_field_content)
-                                # copy list as it is needed for next iteration and add element
+                                # copy list as original list is needed for next loop iteration,
+                                # add freshly captured piece to list
                                 captured_pieces_updated = captured_pieces + [neighboring_field_content]
-                                # pass captures from current sequence including that from current move
+                                # pass list of captured pieces in a current sequence
+                                # including one made in that iteration
                                 continuation_sequences = self.get_possible_captures_for_man_from_field\
                                     (piece, row_after_capture, col_after_capture, captured_pieces_updated)
 
@@ -168,9 +167,15 @@ class Board():
                     #     for seq in continuation_sequences:
                     #         seq.append(current_move)
                     #         possible_sequences.append(seq)
-
-
                     row_examined += vertical_step
                     col_examined += horizontal_step
-
         return possible_sequences
+
+    def get_possible_noncapture_moves_for_king(self, piece: Piece):
+        #TODO
+        return []
+
+    def highlight_square(self, window, row, col):
+        assert(self.board[row][col] == 0, 'Error in highlighting square: square not empty.')
+        pygame.draw.rect(window, HIGHLIGHT_COLOR,
+                         pygame.Rect((col * SQUARE_WIDTH, row * SQUARE_HEIGHT), (SQUARE_WIDTH, SQUARE_HEIGHT)))
