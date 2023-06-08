@@ -33,19 +33,19 @@ class TestBoard(unittest.TestCase):
 
     def test_get_possible_captures_for_man_from_field(self):
         board = Board()
-        moves = board.get_potential_capture_sequences_for_man(board.board[3][2], 3, 2)
-        self.assertListEqual(moves, [])
+        possible_sequences = board.get_potential_capture_sequences_for_man(board.board[3][2], 3, 2)
+        self.assertListEqual(possible_sequences, [])
 
         board.board[4][3] = Piece(4,3,Player.PLAYER_BOTTOM)
-        moves = board.get_potential_capture_sequences_for_man(board.board[3][2], 3, 2)
-        self.assertEqual(moves[0][0], Move(3, 2, 5, 4, captured_piece = board.board[4][3]))
+        possible_sequences = board.get_potential_capture_sequences_for_man(board.board[3][2], 3, 2)
+        self.assertEqual(possible_sequences[0].sequence[0], Move(3, 2, 5, 4, captured_piece = board.board[4][3]))
 
         board.board[6][1] = 0
         board.board[7][2] = 0
         board.board[7][4] = 0
         board.board[7][6] = 0
-        moves = board.get_potential_capture_sequences_for_man(board.board[3][2], 3, 2)
-        print(moves)
+        possible_sequences = board.get_potential_capture_sequences_for_man(board.board[3][2], 3, 2)
+        self.assertEqual(len(possible_sequences), 2)
         # self.assertListEqual(moves, [])
         # game.board.board[4][3] = Piece(4, 3, Player.PLAYER_BOTTOM)
         # game.board.board[4][5] = Piece(4, 5, Player.PLAYER_BOTTOM)

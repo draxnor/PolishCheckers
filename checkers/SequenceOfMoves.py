@@ -32,3 +32,6 @@ class SequenceOfMoves:
                 captured_pieces.append(move.captured_piece)
 
         return captured_pieces
+
+    #TODO
+    # add method 'contains_capturing'

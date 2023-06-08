@@ -26,6 +26,7 @@ class Move:
     @property
     def destination(self):
         return self.destination_row, self.destination_col
+
     @property
     def origin(self):
         return self.origin_row, self.origin_col

@@ -73,13 +73,14 @@ class Board():
 
     # TODO
     def get_valid_moves(self, player: Player):
-        valid_sequences = {}
+        potential_sequences = []
         for row in range(ROWS):
             for col in range(COLUMNS):
                 piece = self.board[row][col]
                 if isinstance(piece, Piece):
                     if piece.player == player:
-                        valid_sequences[piece] = self.get_potential_sequences_for_piece(piece)
+                        potential_sequences += self.get_potential_sequences_for_piece(piece)
+        max_length
         #TODO
         # decide: dictionary piece: sequences or list of all sequences
         # get only those sequences that are the longest or have at least one capturing move
@@ -178,7 +179,7 @@ class Board():
                         if field_content != 0:
                             break
                         current_move = Move(row, col, row_examined, col_examined, enemy_piece)
-                        updated_captured_pieces  = captured_pieces + [enemy_piece]
+                        updated_captured_pieces = captured_pieces + [enemy_piece]
                         sequence_continuation = self.get_potential_capture_sequences_for_queen(piece, row_examined, col_examined, updated_captured_pieces)
                         if sequence_continuation:
                             for seq in sequence_continuation:
