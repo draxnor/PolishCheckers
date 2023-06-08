@@ -2,14 +2,11 @@ import pygame
 from .Board import Board
 from .Player import Player
 from .Piece import Piece
-
+from .Move import Move
 
 class Game:
     def __init__(self, window):
-        self.selected = None
-        self.board = Board()
-        self.turn = Player.PLAYER_TOP
-        self.valid_moves = []
+        self._init()
         self.window = window
 
     def _init(self):
@@ -19,8 +16,9 @@ class Game:
         self.valid_moves = {}
 
     def update(self):
-        self.board.draw_board(self.window)
+        self.board.draw_background(self.window)
         self.highlight_possible_moves(self.valid_moves)
+        self.board.draw_pieces(self.window)
         pygame.display.update()
 
     def reset(self):
@@ -32,7 +30,8 @@ class Game:
         #   but only if you selected piece that belong to you
         if self.selected is not None:
             if isinstance(self.selected, Piece):
-                success = False # self._move(row, col) #TODO
+                success = self._move(row, col) #TODO
+                self.selected = None
                 if not success:
                     self.selected = None
             self.valid_moves = []
@@ -40,18 +39,22 @@ class Game:
         if self.selected is None:
             piece = self.board.get_piece(row, col)
             if isinstance(piece, Piece) and piece.player == self.turn:
+                print(f'Piece belongs to {piece.player} when it is turn of {self.turn}')
                 self.selected = piece
-                self.valid_moves = self.board.get_valid_moves_of_piece(piece)
+                self.valid_moves = self.board.get_potential_sequences_for_piece(piece)
 
 
     def _move(self, row, col):
         #TODO
-        return False
+        # For chosen piece
+        # move = Move(self.selected.row, self.selected.col, )
+        # self.board.move(move)
+        return True
 
     def highlight_possible_moves(self, list_of_sequences):
         if list_of_sequences:
-            for sequence in list_of_sequences:
-                for move in sequence:
+            for seq in list_of_sequences:
+                for move in seq.sequence:
                     row, col = move.destination
                     self.board.highlight_square(self.window, row, col)
 

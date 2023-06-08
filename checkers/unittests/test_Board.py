@@ -24,31 +24,59 @@ class TestBoard(unittest.TestCase):
     def test_get_possible_noncapture_moves_for_man(self):
         board = Board()
         piece = board.get_piece(0,1)
-        moves = board.get_possible_noncapture_moves_for_man(piece)
+        moves = board.get_potential_noncapture_sequences_for_man(piece)
         self.assertListEqual(moves, [])
 
         piece2 = board.get_piece(3, 0)
-        moves2 = board.get_possible_noncapture_moves_for_man(piece)
+        moves2 = board.get_potential_noncapture_sequences_for_man(piece)
         #self.assertListEqual(moves, [(4,1)])
 
     def test_get_possible_captures_for_man_from_field(self):
         board = Board()
-        moves = board.get_possible_captures_for_man_from_field(board.board[3][2], 3, 2)
+        moves = board.get_potential_capture_sequences_for_man(board.board[3][2], 3, 2)
         self.assertListEqual(moves, [])
 
-        piece_to_capture = Piece(4,3,Player.PLAYER_BOTTOM)
-        board.board[4][3] = piece_to_capture
-        moves = board.get_possible_captures_for_man_from_field(board.board[3][2], 3, 2)
-        self.assertEqual(moves[0][0], Move(3, 2, 5, 4, captured_piece = piece_to_capture))
+        board.board[4][3] = Piece(4,3,Player.PLAYER_BOTTOM)
+        moves = board.get_potential_capture_sequences_for_man(board.board[3][2], 3, 2)
+        self.assertEqual(moves[0][0], Move(3, 2, 5, 4, captured_piece = board.board[4][3]))
 
         board.board[6][1] = 0
         board.board[7][2] = 0
         board.board[7][4] = 0
         board.board[7][6] = 0
-        moves = board.get_possible_captures_for_man_from_field(board.board[3][2], 3, 2)
+        moves = board.get_potential_capture_sequences_for_man(board.board[3][2], 3, 2)
         print(moves)
         # self.assertListEqual(moves, [])
+        # game.board.board[4][3] = Piece(4, 3, Player.PLAYER_BOTTOM)
+        # game.board.board[4][5] = Piece(4, 5, Player.PLAYER_BOTTOM)
+        # game.board.board[6][1] = 0
+        # game.board.board[7][2] = 0
+        # game.board.board[7][4] = 0
+        # game.board.board[7][6] = 0
+
+
+
+    def t_get_possible_captures_for_king(self):
+        board = Board()
+        # for row in range(ROWS):
+        #     for col in range(COLUMNS):
+        #         game.board.board[row][col] = 0
         #
+        # game.board.board[0][3] = Piece(0, 3, Player.PLAYER_TOP)
+        # game.board.board[0][3].promote_piece()
+        # game.board.board[2][5] = Piece(2, 5, Player.PLAYER_BOTTOM)
+        # game.board.board[4][5] = Piece(4, 5, Player.PLAYER_BOTTOM)
+        # game.board.board[4][3] = Piece(4, 3, Player.PLAYER_BOTTOM)
+        # game.board.board[6][5] = Piece(6, 5, Player.PLAYER_BOTTOM)
+        # game.board.board[5][8] = Piece(5, 8, Player.PLAYER_BOTTOM)
+
+    def t_get_possible_noncapture_moves_for_king(self):
+        board = Board()
+        # for row in range(ROWS):
+        #     for col in range(COLUMNS):
+        #         game.board.board[row][col] = 0
+        # game.board.board[6][5] = Piece(6, 5, Player.PLAYER_TOP)
+        # game.board.board[6][5].promote_piece()
 
 if __name__ == "__main__":
     unittest.main()

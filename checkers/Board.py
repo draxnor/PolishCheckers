@@ -3,6 +3,7 @@ from .constants import *
 from .Piece import Piece
 from .Player import Player
 from .Move import Move
+from .SequenceOfMoves import SequenceOfMoves
 
 class Board():
     def __init__(self):
@@ -15,16 +16,22 @@ class Board():
         self.draw_background(window)
         self.draw_pieces(window)
 
-    def move(self, piece, row, col):
-        self.board[piece.row][piece.col], self.board[row][col] = self.board[row][col], self.board[piece.row][piece.col]
-        piece.move(row, col)
+    def move(self, move: Move):
+        origin_row, origin_col = move.origin
+        piece = self.board[origin_row][origin_col]
+        destination_row, destination_col = move.destination
+        self.board[destination_row][destination_col] = piece
+        self.board[origin_row][origin_col] = 0
+        piece.move(destination_row, destination_col)
 
-        if row == ROWS-1 or row == 0:
+        if destination_row == ROWS-1 and piece.player == Player.PLAYER_TOP and not piece.is_king:
             piece.promote_piece()
-            if piece.player == Player.PLAYER_TOP:
-                self.player1_kings_left += 1
-            elif piece.player == Player.PLAYER_BOTTOM:
-                self.player2_kings_left += 1
+            self.player1_kings_left += 1
+            self.player1_men_left -= 1
+        if destination_row == 0 and piece.player == Player.PLAYER_BOTTOM and not piece.is_king:
+            piece.promote_piece()
+            self.player2_kings_left += 1
+            self.player2_men_left -= 1
 
     @staticmethod
     def draw_background(window):
@@ -41,7 +48,6 @@ class Board():
                 if isinstance(self.board[row][col], Piece):
                     self.board[row][col].draw(window)
 
-
     def create_board(self):
         for row in range(ROWS):
             self.board.append([])
@@ -56,126 +62,154 @@ class Board():
                 else:
                     self.board[row].append(-1)
 
-    def get_piece(self, row, col):
-        # if not isinstance(self.board[row][col], Piece):
-        #     raise IndexError('There is no piece at passed index.')
-        return self.board[row][col]
-
-    def get_valid_moves_of_piece(self, piece: Piece):
-        # look for captures first
-        # if capture possible, leave only those with the highest possible capture count
-        # if captures impossible, leave only normal moves
-        if piece.is_king:
-            moves = self.get_possible_captures_for_king(piece, piece.row, piece.col)
-            if not moves:
-                moves = self.get_possible_noncapture_moves_for_king(piece)
-        else:
-            moves = self.get_possible_captures_for_man_from_field(piece, piece.row, piece.col)
-            if not moves:
-                moves = self.get_possible_noncapture_moves_for_man(piece)
-        return moves
-
-    def get_possible_noncapture_moves_for_man(self, piece: Piece) -> list[Move]:
-        list_of_moves = []
-        left_col = piece.col - 1
-        right_col = piece.col + 1
-        if piece.player == Player.PLAYER_TOP:
-            target_row = piece.row + 1
-        else: # piece.player == Player.PLAYER_BOTTOM:
-            target_row = piece.row - 1
-        if 0 <= target_row < ROWS:
-            if 0 <= left_col:
-                if self.board[target_row][left_col] == 0:
-                    list_of_moves.append([Move(piece.row, piece.col, target_row, left_col)])
-            if right_col < COLUMNS:
-                if self.board[target_row][right_col] == 0:
-                    list_of_moves.append([Move(piece.row, piece.col, target_row, right_col)])
-        return list_of_moves
-
-    def _is_out_of_bound(self, row, col):
+    def _is_out_of_bound(self, row, col) -> bool:
         if 0 <= row < ROWS and 0 <= col < COLUMNS:
             return False
         return True
 
-    def get_possible_captures_for_man_from_field(self, piece, row, col, captured_pieces=[]):
-        possible_sequences = []
-        # for every diagonal
-        for horizontal_step in (-1, 1):
+    def get_piece(self, row, col):
+        assert(not self._is_out_of_bound(row, col), 'Error in getting piece: Index out of bound.')
+        return self.board[row][col]
+
+    # TODO
+    def get_valid_moves(self, player: Player):
+        valid_sequences = {}
+        for row in range(ROWS):
+            for col in range(COLUMNS):
+                piece = self.board[row][col]
+                if isinstance(piece, Piece):
+                    if piece.player == player:
+                        valid_sequences[piece] = self.get_potential_sequences_for_piece(piece)
+        #TODO
+        # decide: dictionary piece: sequences or list of all sequences
+        # get only those sequences that are the longest or have at least one capturing move
+
+    def get_potential_sequences_for_piece(self, piece: Piece):
+        # Look for captures first. If captures possible, leave only those with the highest possible capture count
+        # If captures impossible, leave only non-capture moves
+        if piece.is_queen:
+            moves = self.get_potential_capture_sequences_for_queen(piece, piece.row, piece.col)
+            if not moves:
+                moves = self.get_potential_noncapture_sequences_for_queen(piece)
+        else:
+            moves = self.get_potential_capture_sequences_for_man(piece, piece.row, piece.col)
+            if not moves:
+                moves = self.get_potential_noncapture_sequences_for_man(piece)
+        if moves:
+            max_number_of_captures = max([sequence.length for sequence in moves])
+            moves = [sequence for sequence in moves if sequence.length == max_number_of_captures]
+        return moves
+
+    def get_potential_noncapture_sequences_for_man(self, piece: Piece) -> list[SequenceOfMoves]:
+        list_of_sequences = []
+        left_col = piece.col - 1
+        right_col = piece.col + 1
+        if piece.player == Player.PLAYER_TOP:
+            target_row = piece.row + 1
+        else:  # Player.PLAYER_BOTTOM:
+            target_row = piece.row - 1
+        if not self._is_out_of_bound(target_row, left_col):
+            if self.board[target_row][left_col] == 0:
+                list_of_sequences.append(SequenceOfMoves(piece, [Move(piece.row, piece.col, target_row, left_col)]))
+        if not self._is_out_of_bound(target_row, right_col):
+            if self.board[target_row][right_col] == 0:
+                list_of_sequences.append(SequenceOfMoves(piece, [Move(piece.row, piece.col, target_row, right_col)]))
+        return list_of_sequences
+
+
+    def get_potential_capture_sequences_for_man(self, piece, row, col, captured_pieces=[]):
+        list_of_possible_sequences = []
+        for horizontal_step in (-1, 1): # for every diagonal
             for vertical_step in (-1, 1):
                 row_after_capture = row+2*vertical_step
                 col_after_capture = col+2*horizontal_step
-                # if there is a space (2 fields) for capture in that direction
+                # if there is a space for capture in that direction (2 fields)
                 if not self._is_out_of_bound(row_after_capture, col_after_capture):
-                    neighboring_field_content = self.get_piece(row+vertical_step, col+horizontal_step)
-                    # if field next to piece is a piece,
-                    # belongs to opponent and was not already captured in current sequence
-                    if isinstance(neighboring_field_content, Piece):
-                        if neighboring_field_content.is_rival_piece(piece) and \
-                                neighboring_field_content not in captured_pieces:
+                    field_content = self.get_piece(row+vertical_step, col+horizontal_step)
+                    # if neighbouring field is an enemy piece and was not already captured in current sequence
+                    if isinstance(field_content, Piece):
+                        if field_content.is_rival_piece(piece) and field_content not in captured_pieces:
                             field_behind_rival_piece_content = self.get_piece(row_after_capture, col_after_capture)
                             # if field behind rival piece is empty or would be empty after moving current piece
-                            # (can happen after multiple captures)
                             if field_behind_rival_piece_content == 0 or field_behind_rival_piece_content == piece:
-                                # copy list and add element
-                                current_move = Move(row, col, row_after_capture, col_after_capture, neighboring_field_content)
-                                # copy list as original list is needed for next loop iteration,
-                                # add freshly captured piece to list
-                                captured_pieces_updated = captured_pieces + [neighboring_field_content]
-                                # pass list of captured pieces in a current sequence
-                                # including one made in that iteration
-                                continuation_sequences = self.get_possible_captures_for_man_from_field\
-                                    (piece, row_after_capture, col_after_capture, captured_pieces_updated)
-
-                                if not continuation_sequences:
-                                    possible_sequences.append([current_move])
+                                current_move = Move(row, col, row_after_capture, col_after_capture, field_content)
+                                # modify copy of list of captured pieces as original is needed for next loop iteration
+                                updated_captured_pieces = captured_pieces + [field_content]
+                                # pass list of captured pieces in current sequence including one made in this iteration
+                                list_of_sequence_continuation = self.get_potential_capture_sequences_for_man\
+                                    (piece, row_after_capture, col_after_capture, updated_captured_pieces)
+                                if not list_of_sequence_continuation:
+                                    list_of_possible_sequences.append(SequenceOfMoves(piece, [current_move]))
                                 else:
-                                    for seq in continuation_sequences:
-                                        seq.append(current_move)
-                                        possible_sequences.append(seq)
-        return possible_sequences
+                                    for seq in list_of_sequence_continuation:
+                                        seq.add_previous_move(current_move)
+                                        list_of_possible_sequences.append(seq)
+        return list_of_possible_sequences
 
-    def get_possible_captures_for_king(self, piece, row, col, captured_pieces=[]):
+    def _find_piece_to_capture_on_diagonal(self, row, col, vertical_step, horizontal_step, piece: Piece) -> tuple[bool, Piece] | tuple[bool, None]:
+        # check if there is rival piece on diagonal and there is at least 1 free field behind piece,
+        # it means that piece capturing is possible
+        is_piece_on_way = False
+        row_examined = row + vertical_step
+        col_examined = col + horizontal_step
+        while 0 < row_examined < ROWS - 1 and 0 < col_examined < COLUMNS - 1 and not is_piece_on_way:
+            field_content = self.get_piece(row_examined, col_examined)
+            if isinstance(field_content, Piece) and field_content != piece:  # piece is not an obstacle for itself
+                is_piece_on_way = True
+            row_examined += vertical_step
+            col_examined += horizontal_step
+        if is_piece_on_way:
+            if field_content.is_rival_piece(piece):
+                field_behind_enemy_piece = self.get_piece(field_content.row + vertical_step, field_content.col + horizontal_step)
+                if field_behind_enemy_piece == 0 or field_behind_enemy_piece == piece:
+                    return True, field_content
+        return False, None
+
+    def get_potential_capture_sequences_for_queen(self, piece: Piece, row, col, captured_pieces=[]):
         possible_sequences = []
-        # for every diagonal
-        for horizontal_step in (-1, 1):
-            for vertical_step in (-1, 1):
-                row_examined = row + vertical_step
-                col_examined = col + horizontal_step
-                while 0 < row_examined < ROWS-1 and 0 < col_examined < COLUMNS-1:
-                    field_content = self.get_piece(row_examined, col_examined)
-                    if not isinstance(field_content, Piece):
-                        continue
-                    if not field_content.is_rival_piece(piece):
-                        break
-                    field_behind_rival_piece_content = \
-                        self.get_piece(row_examined + vertical_step, col_examined + horizontal_step)
-                    if field_behind_rival_piece_content != 0:
-                        break
-                    # it is rival piece on diagonal and there is at least 1 free field behind piece,
-                    # it means that piece capturing is possible
-
-                    # TODO
-                    # Follow idea from function 'get_possible_captures_for_man_from_field'
-                    # current_move = Move(row, col, row_after_capture, col_after_capture, neighboring_field_content)
-                    # captured_pieces_updated = captured_pieces + [neighboring_field_content]
-                    # continuation_sequences = self.get_possible_captures_for_man_from_field\
-                    #     (piece, row_after_capture, col_after_capture, captured_pieces_updated)
-                    #
-                    # if not continuation_sequences:
-                    #     possible_sequences.append([current_move])
-                    # else:
-                    #     for seq in continuation_sequences:
-                    #         seq.append(current_move)
-                    #         possible_sequences.append(seq)
-                    row_examined += vertical_step
-                    col_examined += horizontal_step
+        for vertical_step in (-1, 1):
+            for horizontal_step in (-1, 1): # for every diagonal
+                is_capture_possible, enemy_piece = self._find_piece_to_capture_on_diagonal(row, col, vertical_step, horizontal_step, piece)
+                if is_capture_possible and enemy_piece not in captured_pieces:
+                    row_examined = enemy_piece.row + vertical_step
+                    col_examined = enemy_piece.col + horizontal_step
+                    while not self._is_out_of_bound(row_examined, col_examined):
+                        field_content = self.get_piece(row_examined, col_examined)
+                        if field_content != 0:
+                            break
+                        current_move = Move(row, col, row_examined, col_examined, enemy_piece)
+                        updated_captured_pieces  = captured_pieces + [enemy_piece]
+                        sequence_continuation = self.get_potential_capture_sequences_for_queen(piece, row_examined, col_examined, updated_captured_pieces)
+                        if sequence_continuation:
+                            for seq in sequence_continuation:
+                                seq.add_previous_move(current_move)
+                                possible_sequences.append(seq)
+                        else:
+                            possible_sequences.append(SequenceOfMoves(piece, [current_move]))
+                        row_examined += vertical_step
+                        col_examined += horizontal_step
         return possible_sequences
 
-    def get_possible_noncapture_moves_for_king(self, piece: Piece):
-        #TODO
-        return []
+    def get_potential_noncapture_sequences_for_queen(self, piece: Piece):
+        possible_sequences = []
+        for vertical_step in (-1, 1):
+            for horizontal_step in (-1, 1):  # for every diagonal
+                examined_row = piece.row + vertical_step
+                examined_col = piece.col + horizontal_step
+                while not self._is_out_of_bound(examined_row, examined_col):
+                    field_content = self.get_piece(examined_row, examined_col)
+                    if field_content != 0:
+                        break
+                    current_move = Move(piece.row, piece.col, examined_row, examined_col)
+                    possible_sequences.append(SequenceOfMoves(piece, [current_move]))
+                    examined_row += vertical_step
+                    examined_col += horizontal_step
+        return possible_sequences
 
     def highlight_square(self, window, row, col):
         assert(self.board[row][col] == 0, 'Error in highlighting square: square not empty.')
         pygame.draw.rect(window, HIGHLIGHT_COLOR,
                          pygame.Rect((col * SQUARE_WIDTH, row * SQUARE_HEIGHT), (SQUARE_WIDTH, SQUARE_HEIGHT)))
+
+    def remove_piece(self, piece: Piece):
+        self.board[piece.row][piece.col] = 0
