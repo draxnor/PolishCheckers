@@ -1,3 +1,4 @@
+import  pygame
 from .Piece import Piece
 from .Move import Move
 
@@ -26,12 +27,23 @@ class SequenceOfMoves:
 
     @property
     def captured_pieces(self):
-        captured_pieces = []
+        return [move for move in self._sequence if move.captured_piece is not None]
+
+    def does_contain_capturing(self):
+        return any([move.does_contain_capture() for move in self._sequence])
+
+    def get_moving_piece(self):
+        return self.moving_piece
+
+    def __repr__(self):
+        header = f'Sequence contains {self.length} moves:'
+        moves_description = '\n'.join([str(move) for move in self._sequence])
+        return header + '\n' + moves_description + '\n'
+
+    def draw_sequence(self, window):
         for move in self._sequence:
-            if move.captured_piece is not None:
-                captured_pieces.append(move.captured_piece)
+            move.draw_move_destination_as_distant_move(window)
 
-        return captured_pieces
+    def draw_move_in_sequence_as_closest(self, window, position):
+        self._sequence[-position-1].draw_move_destination_as_closest_move(window)
 
-    #TODO
-    # add method 'contains_capturing'

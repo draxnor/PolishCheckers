@@ -34,13 +34,16 @@ class Board():
             self.player2_men_left -= 1
 
     @staticmethod
+    def draw_square(row, col, color, window):
+        pygame.draw.rect(window, color, pygame.Rect((col*SQUARE_WIDTH, row*SQUARE_HEIGHT), (SQUARE_WIDTH, SQUARE_HEIGHT)))
+
+    @staticmethod
     def draw_background(window):
         window.fill(BLACK)
         for row in range(ROWS):
             for col in range(COLUMNS):
                 if (row % 2 == 0 and col % 2 == 0) or (row % 2 != 0 and col % 2 != 0):
-                    pygame.draw.rect(window, WHITE,
-                                     pygame.Rect((row*SQUARE_WIDTH, col*SQUARE_HEIGHT), (SQUARE_WIDTH, SQUARE_HEIGHT)))
+                    Board.draw_square(row, col, WHITE, window)
 
     def draw_pieces(self, window):
         for row in range(ROWS):
@@ -71,8 +74,7 @@ class Board():
         assert(not self._is_out_of_bound(row, col), 'Error in getting piece: Index out of bound.')
         return self.board[row][col]
 
-    # TODO
-    def get_valid_moves(self, player: Player):
+    def get_potential_sequences_for_all_pieces(self, player: Player):
         potential_sequences = []
         for row in range(ROWS):
             for col in range(COLUMNS):
@@ -80,10 +82,26 @@ class Board():
                 if isinstance(piece, Piece):
                     if piece.player == player:
                         potential_sequences += self.get_potential_sequences_for_piece(piece)
-        max_length
-        #TODO
-        # decide: dictionary piece: sequences or list of all sequences
-        # get only those sequences that are the longest or have at least one capturing move
+        return potential_sequences
+
+    def _get_valid_moves_for_a_piece(self, piece: Piece): # not recommended to use because of low speed
+        valid_moves = self.get_valid_moves(piece.player)
+        return [sequence for sequence in valid_moves if sequence.get_moving_piece() == piece]
+
+    def get_valid_moves(self, player: Player):
+        potential_sequences = self.get_potential_sequences_for_all_pieces(player)
+        if not potential_sequences:
+            return potential_sequences
+
+        max_sequence_length = max([sequence.length for sequence in potential_sequences])
+        if max_sequence_length == 1:
+            single_capture_sequences = [sequence for sequence in potential_sequences if sequence.does_contain_capturing()]
+            if single_capture_sequences:
+                return single_capture_sequences
+            else:
+                return potential_sequences
+        else:
+            return [sequence for sequence in potential_sequences if sequence.length == max_sequence_length]
 
     def get_potential_sequences_for_piece(self, piece: Piece):
         # Look for captures first. If captures possible, leave only those with the highest possible capture count
@@ -149,7 +167,7 @@ class Board():
 
     def _find_piece_to_capture_on_diagonal(self, row, col, vertical_step, horizontal_step, piece: Piece) -> tuple[bool, Piece] | tuple[bool, None]:
         # check if there is rival piece on diagonal and there is at least 1 free field behind piece,
-        # it means that piece capturing is possible
+        # it means that piece capturing is possible for queen
         is_piece_on_way = False
         row_examined = row + vertical_step
         col_examined = col + horizontal_step
@@ -207,10 +225,6 @@ class Board():
                     examined_col += horizontal_step
         return possible_sequences
 
-    def highlight_square(self, window, row, col):
-        assert(self.board[row][col] == 0, 'Error in highlighting square: square not empty.')
-        pygame.draw.rect(window, HIGHLIGHT_COLOR,
-                         pygame.Rect((col * SQUARE_WIDTH, row * SQUARE_HEIGHT), (SQUARE_WIDTH, SQUARE_HEIGHT)))
-
     def remove_piece(self, piece: Piece):
         self.board[piece.row][piece.col] = 0
+
