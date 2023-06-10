@@ -7,6 +7,14 @@ class SequenceOfMoves:
         self.moving_piece = piece
         self._sequence = sequence_as_list
 
+    @property
+    def first_move(self):
+        if self._sequence:
+            return self.sequence[-1]
+
+    def pop(self):
+        return self._sequence.pop()
+
     def add_next_move(self, move: Move):
         self._sequence.insert(0, move)
 
@@ -46,4 +54,7 @@ class SequenceOfMoves:
 
     def draw_move_in_sequence_as_closest(self, window, position):
         self._sequence[-position-1].draw_move_destination_as_closest_move(window)
+
+    def is_empty(self):
+        return self.length == 0
 

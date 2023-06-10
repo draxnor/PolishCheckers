@@ -17,11 +17,11 @@ class Move:
         return repr_str
 
     def __eq__(self, other):
+        return self.is_same_origin_and_destination(other) and self.captured_piece == other.captured_piece
+
+    def is_same_origin_and_destination(self, other):
         return self.origin_row == other.origin_row and self.origin_col == other.origin_col and \
-               self.destination_row == other.destination_row and self.destination_col == other.destination_col and \
-               self.captured_piece.row == other.captured_piece.row and \
-               self.captured_piece.col == other.captured_piece.col and \
-               self.captured_piece.player == other.captured_piece.player
+               self.destination_row == other.destination_row and self.destination_col == other.destination_col
 
     @property
     def destination(self):

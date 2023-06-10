@@ -194,8 +194,8 @@ class Board():
                     col_examined = enemy_piece.col + horizontal_step
                     while not self._is_out_of_bound(row_examined, col_examined):
                         field_content = self.get_piece(row_examined, col_examined)
-                        if field_content != 0:
-                            break
+                        if field_content != 0 and field_content != piece:  # piece is not an obstacle for itself
+                                break
                         current_move = Move(row, col, row_examined, col_examined, enemy_piece)
                         updated_captured_pieces = captured_pieces + [enemy_piece]
                         sequence_continuation = self.get_potential_capture_sequences_for_queen(piece, row_examined, col_examined, updated_captured_pieces)
@@ -227,4 +227,22 @@ class Board():
 
     def remove_piece(self, piece: Piece):
         self.board[piece.row][piece.col] = 0
+
+    def perform_move(self, piece_moving: Piece, move: Move):
+        assert(piece_moving.row == move.origin_row and piece_moving.col == move.origin_col)
+        origin_row, origin_col = move.origin
+        dest_row, dest_col = move.destination
+
+        self.board[origin_row][origin_col], self.board[dest_row][dest_col] = self.board[dest_row][dest_col], self.board[origin_row][origin_col]
+        piece_moving.move(dest_row, dest_col)
+        if move.does_contain_capture():
+            self.remove_piece(move.captured_piece)
+
+    def perform_piece_promotions(self):
+        for row in (0, ROWS-1):
+            for col in range(COLUMNS):
+                piece = self.get_piece(row, col)
+                if isinstance(piece,Piece):
+                    if piece.is_ready_to_promote():
+                        piece.promote()
 

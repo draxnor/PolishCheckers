@@ -10,18 +10,27 @@ class Piece:
         self.row = row
         self.col = col
         self.player = player
-        if player == Player.PLAYER_TOP:
-            self.color = PLAYER_TOP_COLOR
-        elif player == Player.PLAYER_BOTTOM:
-            self.color = PLAYER_BOTTOM_COLOR
         self.is_queen = False
+
+    def __eq__(self, other):
+        if not isinstance(other, Piece):
+            return False
+        return self.row == other.row and self.col == other.col and \
+               self.player == other.player and self.is_queen == other.is_queen
+
+    @property
+    def color(self):
+        if self.player == Player.PLAYER_TOP:
+            return PLAYER_TOP_COLOR
+        elif self.player == Player.PLAYER_BOTTOM:
+            return PLAYER_BOTTOM_COLOR
 
     def get_position(self): # center of the square
         y = self.row * SQUARE_HEIGHT + SQUARE_HEIGHT//2
         x = self.col * SQUARE_WIDTH + SQUARE_WIDTH//2
         return x, y
 
-    def promote_piece(self):
+    def promote(self):
         self.is_queen = True
 
     def move(self, row, col):
@@ -44,3 +53,12 @@ class Piece:
         player_info =  'P' + str(self.player.value)
         representation = str((self.row,self.col)) + '(' + piece_info + '_' + player_info + ')'
         return representation
+
+    def is_ready_to_promote(self):
+        if self.is_queen:
+            return False
+        if self.player == Player.PLAYER_BOTTOM and self.row == 0:
+            return True
+        if self.player == Player.PLAYER_TOP and self.row == ROWS-1:
+            return True
+        return False
