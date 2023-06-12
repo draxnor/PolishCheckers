@@ -89,7 +89,6 @@ class Game:
         self.calculate_valid_moves()
 
     def check_for_draw_by_1v1_queen_endgame(self):
-        print(self.board.piece_count_detailed)
         return self.board.piece_count_detailed == (0, 1, 0, 1) and \
                self.noncapture_queens_moves_count >= MOVES_COUNT_FOR_1V1_ENDGAME
 
