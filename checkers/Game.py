@@ -21,8 +21,6 @@ class Game:
     def update(self):
         self.board.draw_background(self.window)
         self.highlight_valid_moves_of_selected_piece()
-        print(self.selected)
-        print(self.valid_moves)
         self.board.draw_pieces(self.window)
         pygame.display.update()
 
@@ -48,7 +46,6 @@ class Game:
             return
         self.selected = None
 
-    # def get_next_valid_moves_of_selected_piece(self):
     def get_valid_moves_of_selected_piece(self):
         return [sequence for sequence in self.valid_moves if sequence.get_moving_piece() == self.selected]
 
@@ -78,6 +75,8 @@ class Game:
     def calculate_valid_moves(self):
         self.valid_moves = self.board.get_valid_moves(self.turn)
 
+    #todo
+    #divide _move method into 2 smaller ones: _move and _update_valid_moves_after_move
     def _move(self, destination_row, destination_col):
         # try moving self.selected to destination
         # create list of sequences that contains

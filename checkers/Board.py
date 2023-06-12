@@ -16,23 +16,6 @@ class Board():
         self.draw_background(window)
         self.draw_pieces(window)
 
-    def move(self, move: Move):
-        origin_row, origin_col = move.origin
-        piece = self.board[origin_row][origin_col]
-        destination_row, destination_col = move.destination
-        self.board[destination_row][destination_col] = piece
-        self.board[origin_row][origin_col] = 0
-        piece.move(destination_row, destination_col)
-
-        if destination_row == ROWS-1 and piece.player == Player.PLAYER_TOP and not piece.is_king:
-            piece.promote_piece()
-            self.player1_kings_left += 1
-            self.player1_men_left -= 1
-        if destination_row == 0 and piece.player == Player.PLAYER_BOTTOM and not piece.is_king:
-            piece.promote_piece()
-            self.player2_kings_left += 1
-            self.player2_men_left -= 1
-
     @staticmethod
     def draw_square(row, col, color, window):
         pygame.draw.rect(window, color, pygame.Rect((col*SQUARE_WIDTH, row*SQUARE_HEIGHT), (SQUARE_WIDTH, SQUARE_HEIGHT)))
@@ -245,4 +228,10 @@ class Board():
                 if isinstance(piece,Piece):
                     if piece.is_ready_to_promote():
                         piece.promote()
+
+    def __eq__(self, other):
+        if not isinstance(other, Board):
+            return False
+        return self.row == other.row and self.col == other.col and \
+               self.player == other.player and self.is_queen == other.is_queen
 

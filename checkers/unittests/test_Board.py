@@ -27,10 +27,6 @@ class TestBoard(unittest.TestCase):
         moves = board.get_potential_noncapture_sequences_for_man(piece)
         self.assertListEqual(moves, [])
 
-        piece2 = board.get_piece(3, 0)
-        moves2 = board.get_potential_noncapture_sequences_for_man(piece)
-        #self.assertListEqual(moves, [(4,1)])
-
     def test_get_possible_captures_for_man_from_field(self):
         board = Board()
         possible_sequences = board.get_potential_capture_sequences_for_man(board.board[3][2], 3, 2)
@@ -46,71 +42,6 @@ class TestBoard(unittest.TestCase):
         board.board[7][6] = 0
         possible_sequences = board.get_potential_capture_sequences_for_man(board.board[3][2], 3, 2)
         self.assertEqual(len(possible_sequences), 2)
-        # self.assertListEqual(moves, [])
-        # game.board.board[4][3] = Piece(4, 3, Player.PLAYER_BOTTOM)
-        # game.board.board[4][5] = Piece(4, 5, Player.PLAYER_BOTTOM)
-        # game.board.board[6][1] = 0
-        # game.board.board[7][2] = 0
-        # game.board.board[7][4] = 0
-        # game.board.board[7][6] = 0
-
-
-
-    def t_get_possible_captures_for_king(self):
-        board = Board()
-        # for row in range(ROWS):
-        #     for col in range(COLUMNS):
-        #         game.board.board[row][col] = 0
-        #
-        # game.board.board[0][3] = Piece(0, 3, Player.PLAYER_TOP)
-        # game.board.board[0][3].promote_piece()
-        # game.board.board[2][5] = Piece(2, 5, Player.PLAYER_BOTTOM)
-        # game.board.board[4][5] = Piece(4, 5, Player.PLAYER_BOTTOM)
-        # game.board.board[4][3] = Piece(4, 3, Player.PLAYER_BOTTOM)
-        # game.board.board[6][5] = Piece(6, 5, Player.PLAYER_BOTTOM)
-        # game.board.board[5][8] = Piece(5, 8, Player.PLAYER_BOTTOM)
-
-    def t_get_possible_noncapture_moves_for_king(self):
-        board = Board()
-        # for row in range(ROWS):
-        #     for col in range(COLUMNS):
-        #         game.board.board[row][col] = 0
-        # game.board.board[6][5] = Piece(6, 5, Player.PLAYER_TOP)
-        # game.board.board[6][5].promote_piece()
-
-    def t_get_valid_sequences(self):
-        pass
-        # for row in range(ROWS):
-        #     for col in range(COLUMNS):
-        #         game.board.board[row][col] = 0
-        # game.board.board[6][5] = Piece(6, 5, Player.PLAYER_TOP)
-        # game.board.board[6][5].promote_piece()
-        # # # game.board.board[2][5] = Piece(2, 5, Player.PLAYER_BOTTOM)
-        # # game.board.board[4][5] = Piece(4, 5, Player.PLAYER_BOTTOM)
-        # # game.board.board[4][3] = Piece(4, 3, Player.PLAYER_BOTTOM)
-        # # game.board.board[6][5] = Piece(6, 5, Player.PLAYER_BOTTOM)
-        # # game.board.board[5][8] = Piece(5, 8, Player.PLAYER_BOTTOM)
-        # valid_moves = game.board.get_valid_moves(game.turn)
-        # print(f'I calculated {len(valid_moves)} sequences.')
-        # print(valid_moves)
-#         it should return 15 valid sequences of length 1, no captures
-
-        # for row in range(ROWS):
-        #     for col in range(COLUMNS):
-        #         game.board.board[row][col] = 0
-        # game.board.board[6][5] = Piece(6, 5, Player.PLAYER_TOP)
-        # game.board.board[6][5].promote_piece()
-        # game.board.board[2][5] = Piece(2, 5, Player.PLAYER_BOTTOM)
-        # game.board.board[4][5] = Piece(4, 5, Player.PLAYER_BOTTOM)
-        # game.board.board[4][3] = Piece(4, 3, Player.PLAYER_BOTTOM)
-        # game.board.board[2][3] = Piece(2, 3, Player.PLAYER_BOTTOM)
-        # # game.board.board[6][5] = Piece(6, 5, Player.PLAYER_BOTTOM)
-        #
-        # game.board.board[5][8] = Piece(5, 8, Player.PLAYER_BOTTOM)
-        # valid_moves = game.board.get_valid_moves(game.turn)
-        # print(f'I calculated {len(valid_moves)} sequences.')
-        # print(valid_moves)
-#         it should return 7 valid sequences containing 4 capturing moves
 
 
 
