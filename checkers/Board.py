@@ -9,8 +9,8 @@ class Board():
     def __init__(self):
         self.board = []
         self.create_board()
-        self.player1_men_left = self.player2_men_left = 20
-        self.player1_kings_left = self.player2_kings_left = 0
+        self.player_top_men_count = self.player_bottom_men_count = INITIAL_PIECE_COUNT
+        self.player_top_kings_count = self.player_bottom_kings_count = 0
 
     def draw_board(self,window):
         self.draw_background(window)
@@ -67,7 +67,10 @@ class Board():
                         potential_sequences += self.get_potential_sequences_for_piece(piece)
         return potential_sequences
 
-    def _get_valid_moves_for_a_piece(self, piece: Piece): # not recommended to use because of low speed
+    def _get_valid_moves_for_a_piece(self, piece: Piece):
+        # Not recommended to use because of low speed
+        # That functionality is supposed to be a part of Game class.
+        # Here it is only for debugging reason and for sake of developer curiosity.
         valid_moves = self.get_valid_moves(piece.player)
         return [sequence for sequence in valid_moves if sequence.get_moving_piece() == piece]
 
@@ -209,6 +212,17 @@ class Board():
         return possible_sequences
 
     def remove_piece(self, piece: Piece):
+        if isinstance(piece, Piece):
+            if piece.is_queen:
+                if piece.player == Player.PLAYER_TOP:
+                    self.player_top_kings_count -= 1
+                else:
+                    self.player_bottom_kings_count -= 1
+            else:
+                if piece.player == Player.PLAYER_TOP:
+                    self.player_top_men_count -= 1
+                else:
+                    self.player_bottom_men_count -= 1
         self.board[piece.row][piece.col] = 0
 
     def perform_move(self, piece_moving: Piece, move: Move):
@@ -221,13 +235,19 @@ class Board():
         if move.does_contain_capture():
             self.remove_piece(move.captured_piece)
 
-    def perform_piece_promotions(self):
+    def perform_pieces_promotions(self):
         for row in (0, ROWS-1):
             for col in range(COLUMNS):
                 piece = self.get_piece(row, col)
                 if isinstance(piece,Piece):
                     if piece.is_ready_to_promote():
                         piece.promote()
+                        if piece.player == Player.PLAYER_TOP:
+                            self.player_top_kings_count += 1
+                            self.player_top_men_count -= 1
+                        else:
+                            self.player_bottom_kings_count += 1
+                            self.player_bottom_men_count -= 1
 
     def __eq__(self, other):
         if not isinstance(other, Board):
@@ -235,3 +255,12 @@ class Board():
         return self.row == other.row and self.col == other.col and \
                self.player == other.player and self.is_queen == other.is_queen
 
+    @property
+    def piece_count_detailed(self):
+        return self.player_top_men_count, self.player_top_kings_count, \
+               self.player_bottom_men_count, self.player_bottom_kings_count
+
+    @property
+    def piece_count_total(self):
+        return self.player_top_men_count + self.player_top_kings_count + \
+               self.player_bottom_men_count + self.player_bottom_kings_count

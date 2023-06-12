@@ -3,6 +3,7 @@ from .Board import Board
 from .Player import Player
 from .Piece import Piece
 from .Move import Move
+from .GameState import GameState
 
 
 class Game:
@@ -17,8 +18,11 @@ class Game:
         self.valid_moves = []
         self.is_sequence_ongoing = False
         self.set_new_turn()
+        self.state = GameState.ONGOING
+        self.board_state_history = []
 
     def update(self):
+        # print(self.board.get_piece_count())
         self.board.draw_background(self.window)
         self.highlight_valid_moves_of_selected_piece()
         self.board.draw_pieces(self.window)
@@ -35,10 +39,11 @@ class Game:
             move_done = self._move(row, col)
             if self.is_sequence_ongoing:
                 return
-            if move_done:
+            if move_done:  # (and not self.is_sequence_ongoing)
                 self.selected = None
                 self.change_turn()
                 self.set_new_turn()
+                self.check_for_game_ending()
                 return
         new_selection = self.board.get_piece(row, col)
         if isinstance(new_selection, Piece) and new_selection.player == self.turn:
@@ -56,27 +61,30 @@ class Game:
             sequence.draw_move_in_sequence_as_closest(self.window, 0)
 
     def set_new_turn(self):
-        self.board.perform_piece_promotions()
+        self.board.perform_pieces_promotions()
         self.calculate_valid_moves()
-        self.check_for_game_ending()
-        #Todo
-        #change check_for_game_ending() to update_game_status()
-        #add conditions for draw
 
-    def check_for_game_ending(self):
-        #TODO
-        # checking the winner
-        # checking conditions for draw
-        is_game_end = False
-        if not self.valid_moves:
-            is_game_end = True
-        return is_game_end
+    def check_for_draw(self):
+        pass
+        # TODO
+
+    def check_gameover_with_loss(self):
+        return not self.valid_moves
+
+    def update_game_state(self):
+        if self.check_gameover_with_loss():
+            if self.turn == Player.PLAYER_TOP:
+                self.state = GameState.PLAYER_BOTTOM_WON
+            else:
+                self.state = GameState.PLAYER_TOP_WON
+            return
+        if self.check_for_draw():
+            self.state = GameState.DRAW
+            return
 
     def calculate_valid_moves(self):
         self.valid_moves = self.board.get_valid_moves(self.turn)
 
-    #todo
-    #divide _move method into 2 smaller ones: _move and _update_valid_moves_after_move
     def _move(self, destination_row, destination_col):
         # try moving self.selected to destination
         # create list of sequences that contains
