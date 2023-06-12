@@ -1,7 +1,7 @@
 import pygame
 from .constants import SQUARE_HEIGHT, SQUARE_WIDTH, \
     PLAYER_TOP_COLOR, PLAYER_BOTTOM_COLOR, PIECE_RADIUS, CROWN_COLOR, \
-    ROWS, COLUMNS
+    ROWS
 from .Player import Player
 
 
