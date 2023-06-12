@@ -4,6 +4,9 @@ from .Player import Player
 from .Piece import Piece
 from .Move import Move
 from .GameState import GameState
+from .constants import NONCAPTURE_QUEEN_MOVES_COUNT_LIMIT, BOARD_STATE_REPETITION_LIMIT, \
+                    MOVES_COUNT_FOR_1V3_ENDGAME, MOVES_COUNT_FOR_1V2_ENDGAME, MOVES_COUNT_FOR_1V1_ENDGAME
+
 
 
 class Game:
@@ -20,9 +23,12 @@ class Game:
         self.set_new_turn()
         self.state = GameState.ONGOING
         self.board_state_history = []
+        self.save_board_state()
+        self.noncapture_queens_moves_count = 0
+        self.move_count_to_draw = 0
 
     def update(self):
-        # print(self.board.get_piece_count())
+        print(self.state.name)
         self.board.draw_background(self.window)
         self.highlight_valid_moves_of_selected_piece()
         self.board.draw_pieces(self.window)
@@ -36,20 +42,38 @@ class Game:
         # If sequence is already ongoing, then invalid selections are ignored. You have to finish one of valid sequences
         # If move impossible or nothing was selected before, select new piece if possible.
         if isinstance(self.selected, Piece):
-            move_done = self._move(row, col)
+            is_move_done = self._move(row, col)
             if self.is_sequence_ongoing:
                 return
-            if move_done:  # (and not self.is_sequence_ongoing)
+            if is_move_done:  # (and not self.is_sequence_ongoing)
                 self.selected = None
+                self.save_board_state()
                 self.change_turn()
                 self.set_new_turn()
-                self.check_for_game_ending()
+                self.update_game_state()
                 return
         new_selection = self.board.get_piece(row, col)
         if isinstance(new_selection, Piece) and new_selection.player == self.turn:
             self.selected = new_selection
             return
         self.selected = None
+
+    def check_for_draw_by_queen_moves_count(self):
+        return self.noncapture_queens_moves_count >= NONCAPTURE_QUEEN_MOVES_COUNT_LIMIT
+
+    def check_for_draw_by_state_repetition(self):
+        repetition_count = 0
+        for board_state in self.board_state_history[::-2]:
+            if self.board.piece_count_total != board_state.piece_count_total:
+                break
+            if self.board == board_state:
+                repetition_count += 1
+                if repetition_count >= BOARD_STATE_REPETITION_LIMIT:
+                    return True
+        return False
+
+    def save_board_state(self):
+        self.board_state_history.append(self.board.deepcopy())
 
     def get_valid_moves_of_selected_piece(self):
         return [sequence for sequence in self.valid_moves if sequence.get_moving_piece() == self.selected]
@@ -64,9 +88,39 @@ class Game:
         self.board.perform_pieces_promotions()
         self.calculate_valid_moves()
 
+    def check_for_draw_by_1v1_queen_endgame(self):
+        print(self.board.piece_count_detailed)
+        return self.board.piece_count_detailed == (0, 1, 0, 1) and \
+               self.noncapture_queens_moves_count >= MOVES_COUNT_FOR_1V1_ENDGAME
+
+    def check_for_draw_by_1v2_queen_endgame(self):
+        if self.board.piece_count_total == 3:
+            if self.board.player_bottom_kings_count >= 1 and self.board.player_top_kings_count >= 1:
+                if self.move_count_to_draw >= MOVES_COUNT_FOR_1V2_ENDGAME:
+                    return True
+        return False
+
+    def check_for_draw_by_1v3_queen_endgame(self):
+        if self.board.piece_count_total == 4:
+            if self.board.player_bottom_kings_count >= 1 and self.board.player_top_kings_count >= 1:
+                if (self.board.player_bottom_kings_count == 1 and self.board.player_bottom_men_count) or\
+                    (self.board.player_top_kings_count == 1 and self.board.player_top_men_count):
+                    if self.move_count_to_draw >= MOVES_COUNT_FOR_1V3_ENDGAME:
+                        return True
+        return False
+
     def check_for_draw(self):
-        pass
-        # TODO
+        if self.check_for_draw_by_1v1_queen_endgame():  # players have 1 queen each
+            return True
+        if self.check_for_draw_by_1v2_queen_endgame():
+            return True
+        if self.check_for_draw_by_1v3_queen_endgame():
+            return True
+        if self.check_for_draw_by_state_repetition():
+            return True
+        if self.check_for_draw_by_queen_moves_count():
+            return True
+        return False
 
     def check_gameover_with_loss(self):
         return not self.valid_moves
@@ -82,8 +136,20 @@ class Game:
             self.state = GameState.DRAW
             return
 
+    def count_queen_moves_for_draw(self, last_made_move: Move):
+        if self.selected.is_queen and not last_made_move.does_contain_capture():
+            self.noncapture_queens_moves_count += 1
+        else:
+            self.noncapture_queens_moves_count = 0
+
     def calculate_valid_moves(self):
         self.valid_moves = self.board.get_valid_moves(self.turn)
+
+    def count_moves_for_endgame_draw(self, move_made: Move):
+        if move_made.does_contain_capture():
+            self.move_count_to_draw = 0
+        else:
+            self.move_count_to_draw += 1
 
     def _move(self, destination_row, destination_col):
         # try moving self.selected to destination
@@ -104,6 +170,8 @@ class Game:
                 self.is_sequence_ongoing = True
             else:
                 self.is_sequence_ongoing = False
+                self.count_queen_moves_for_draw(move_to_make)
+                self.count_moves_for_endgame_draw(move_to_make)
             self.valid_moves = sequences_that_contained_move
             return True
         else:

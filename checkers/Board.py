@@ -12,6 +12,50 @@ class Board():
         self.player_top_men_count = self.player_bottom_men_count = INITIAL_PIECE_COUNT
         self.player_top_kings_count = self.player_bottom_kings_count = 0
 
+    def __eq__(self, other):
+        if not isinstance(other, Board):
+            return False
+        if not self.piece_count_detailed == other.piece_count_detailed:
+            return False
+        for row in range(ROWS):
+            for col in range(COLUMNS):
+                if not self.board[row][col] == other.board[row][col]:
+                    return False
+        return True
+
+    def deepcopy(self):
+        cls = self.__class__
+        new_object = cls.__new__(cls)
+        new_object.__dict__.update(self.__dict__)
+        new_object.board = [[piece for piece in row] for row in self.board]
+        new_object.player_top_men_count = self.player_top_men_count
+        new_object.player_bottom_men_count = self.player_bottom_men_count
+        new_object.player_top_kings_count = self.player_top_kings_count
+        new_object.player_bottom_kings_count = self.player_bottom_kings_count
+        return new_object
+
+    def recalculate_pieces_count(self):
+        self.player_top_kings_count = 0
+        self.player_top_men_count = 0
+        self.player_bottom_kings_count = 0
+        self.player_bottom_men_count = 0
+
+        for row in range(ROWS):
+            for col in range(COLUMNS):
+                piece = self.get_piece(row, col)
+                if isinstance(piece, Piece):
+                    if piece.player == Player.PLAYER_TOP:
+                        if piece.is_queen:
+                            self.player_top_kings_count += 1
+                        else:
+                            self.player_top_men_count += 1
+                    else:
+                        if piece.is_queen:
+                            self.player_bottom_kings_count += 1
+                        else:
+                            self.player_bottom_men_count += 1
+
+
     def draw_board(self,window):
         self.draw_background(window)
         self.draw_pieces(window)
@@ -66,6 +110,7 @@ class Board():
                     if piece.player == player:
                         potential_sequences += self.get_potential_sequences_for_piece(piece)
         return potential_sequences
+
 
     def _get_valid_moves_for_a_piece(self, piece: Piece):
         # Not recommended to use because of low speed
@@ -248,12 +293,6 @@ class Board():
                         else:
                             self.player_bottom_kings_count += 1
                             self.player_bottom_men_count -= 1
-
-    def __eq__(self, other):
-        if not isinstance(other, Board):
-            return False
-        return self.row == other.row and self.col == other.col and \
-               self.player == other.player and self.is_queen == other.is_queen
 
     @property
     def piece_count_detailed(self):
