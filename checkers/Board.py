@@ -5,7 +5,20 @@ from .Player import Player
 from .Move import Move
 from .SequenceOfMoves import SequenceOfMoves
 
-class Board():
+
+class Board:
+    @staticmethod
+    def draw_square(row, col, color, window):
+        pygame.draw.rect(window, color, pygame.Rect((col*SQUARE_WIDTH, row*SQUARE_HEIGHT), (SQUARE_WIDTH, SQUARE_HEIGHT)))
+
+    @staticmethod
+    def draw_background(window):
+        window.fill(BLACK)
+        for row in range(ROWS):
+            for col in range(COLUMNS):
+                if (row % 2 == 0 and col % 2 == 0) or (row % 2 != 0 and col % 2 != 0):
+                    Board.draw_square(row, col, WHITE, window)
+
     def __init__(self):
         self.board = []
         self.create_board()
@@ -22,6 +35,17 @@ class Board():
                 if not self.board[row][col] == other.board[row][col]:
                     return False
         return True
+
+    @property
+    def piece_count_detailed(self):
+        return self.player_top_men_count, self.player_top_kings_count, \
+               self.player_bottom_men_count, self.player_bottom_kings_count
+
+    @property
+    def piece_count_total(self):
+        return self.player_top_men_count + self.player_top_kings_count + \
+               self.player_bottom_men_count + self.player_bottom_kings_count
+
 
     def deepcopy(self):
         cls = self.__class__
@@ -56,21 +80,11 @@ class Board():
                             self.player_bottom_men_count += 1
 
 
-    def draw_board(self,window):
+    def draw_board(self, window):
         self.draw_background(window)
         self.draw_pieces(window)
 
-    @staticmethod
-    def draw_square(row, col, color, window):
-        pygame.draw.rect(window, color, pygame.Rect((col*SQUARE_WIDTH, row*SQUARE_HEIGHT), (SQUARE_WIDTH, SQUARE_HEIGHT)))
 
-    @staticmethod
-    def draw_background(window):
-        window.fill(BLACK)
-        for row in range(ROWS):
-            for col in range(COLUMNS):
-                if (row % 2 == 0 and col % 2 == 0) or (row % 2 != 0 and col % 2 != 0):
-                    Board.draw_square(row, col, WHITE, window)
 
     def draw_pieces(self, window):
         for row in range(ROWS):
@@ -285,7 +299,7 @@ class Board():
             for col in range(COLUMNS):
                 piece = self.get_piece(row, col)
                 if isinstance(piece,Piece):
-                    if piece.is_ready_to_promote():
+                    if piece.is_ready_to_promote:
                         piece.promote()
                         if piece.player == Player.PLAYER_TOP:
                             self.player_top_kings_count += 1
@@ -294,12 +308,4 @@ class Board():
                             self.player_bottom_kings_count += 1
                             self.player_bottom_men_count -= 1
 
-    @property
-    def piece_count_detailed(self):
-        return self.player_top_men_count, self.player_top_kings_count, \
-               self.player_bottom_men_count, self.player_bottom_kings_count
 
-    @property
-    def piece_count_total(self):
-        return self.player_top_men_count + self.player_top_kings_count + \
-               self.player_bottom_men_count + self.player_bottom_kings_count

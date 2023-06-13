@@ -12,8 +12,8 @@ class Move:
 
     def __repr__(self):
         repr_str = 'From:' + str((self.origin_row, self.origin_col)) + \
-        ' To:' + str((self.destination_row, self.destination_col)) + \
-        ', capturing: ' + str(self.captured_piece)
+                   ' To:' + str((self.destination_row, self.destination_col)) + \
+                   ', capturing: ' + str(self.captured_piece)
         return repr_str
 
     def __eq__(self, other):
@@ -40,6 +40,7 @@ class Move:
         pygame.draw.circle(window, HIGHLIGHT_COLOR, destination_square_center, MOVE_DOT_RADIUS)
 
     def draw_move_destination_as_closest_move(self, window):
-        square = pygame.Rect((self.destination_col * SQUARE_WIDTH, self.destination_row*SQUARE_HEIGHT), (SQUARE_WIDTH, SQUARE_HEIGHT))
+        square = pygame.Rect((self.destination_col * SQUARE_WIDTH, self.destination_row*SQUARE_HEIGHT),
+                             (SQUARE_WIDTH, SQUARE_HEIGHT))
         pygame.draw.rect(window, HIGHLIGHT_COLOR, square)
 
