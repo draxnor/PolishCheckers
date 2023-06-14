@@ -1,7 +1,6 @@
 from __future__ import annotations
-import pygame
-from .constants import SQUARE_HEIGHT, SQUARE_WIDTH, PLAYER_TOP_COLOR, PLAYER_BOTTOM_COLOR, \
-    PIECE_RADIUS, CROWN_COLOR, ROWS
+from .graphics_constants import SQUARE_HEIGHT, SQUARE_WIDTH, PLAYER_TOP_COLOR, PLAYER_BOTTOM_COLOR
+from .game_constants import ROWS
 from .Player import Player
 
 
@@ -54,11 +53,6 @@ class Piece:
     def move(self, destination_row: int, destination_col: int) -> None:
         self.row = destination_row
         self.col = destination_col
-
-    def draw(self, window: pygame.Surface) -> None:
-        pygame.draw.circle(window, self.color, self.position_on_display, PIECE_RADIUS)
-        if self.is_queen:
-            pygame.draw.circle(window, CROWN_COLOR, self.position_on_display, PIECE_RADIUS // 2)
 
     def is_rival_piece(self, piece: Piece) -> bool:
         return self.player != piece.player

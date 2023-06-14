@@ -1,7 +1,5 @@
 from __future__ import annotations
-import pygame
 from .Piece import Piece
-from .constants import HIGHLIGHT_COLOR, SQUARE_HEIGHT, SQUARE_WIDTH, MOVE_DOT_RADIUS
 
 
 class Move:
@@ -36,14 +34,4 @@ class Move:
 
     def does_contain_capture(self) -> bool:
         return self.captured_piece is not None
-
-    def draw_move_destination_as_distant_move(self, window: pygame.Surface) -> None:
-        destination_square_center =  (self.destination_col * SQUARE_WIDTH + SQUARE_WIDTH//2,
-                                      self.destination_row * SQUARE_HEIGHT + SQUARE_HEIGHT//2)
-        pygame.draw.circle(window, HIGHLIGHT_COLOR, destination_square_center, MOVE_DOT_RADIUS)
-
-    def draw_move_destination_as_closest_move(self, window: pygame.Surface) -> None:
-        square = pygame.Rect((self.destination_col * SQUARE_WIDTH, self.destination_row*SQUARE_HEIGHT),
-                             (SQUARE_WIDTH, SQUARE_HEIGHT))
-        pygame.draw.rect(window, HIGHLIGHT_COLOR, square)
 

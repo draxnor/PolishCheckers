@@ -1,6 +1,7 @@
 from __future__ import annotations
 import pygame
-from .constants import *
+from .game_constants import *
+from .graphics_constants import SQUARE_HEIGHT, SQUARE_WIDTH
 from .Piece import Piece
 from .Player import Player
 from .Move import Move
@@ -13,35 +14,6 @@ class Board:
         if 0 <= row < ROWS and 0 <= col < COLUMNS:
             return False
         return True
-
-    @staticmethod
-    def get_coordinates_from_mouse_pos(pos: tuple[int, int]) -> tuple[int, int]:
-        x, y = pos
-        row = y // SQUARE_HEIGHT
-        col = x // SQUARE_WIDTH
-        return row, col
-
-    @staticmethod
-    def draw_square(row: int, col: int, color: tuple[int, int, int], window: pygame.Surface) -> None:
-        pygame.draw.rect(window, color, pygame.Rect((col*SQUARE_WIDTH, row*SQUARE_HEIGHT), (SQUARE_WIDTH, SQUARE_HEIGHT)))
-
-    @staticmethod
-    def draw_background(window: pygame.Surface) -> None:
-        window.fill(BLACK)
-        for row in range(ROWS):
-            for col in range(COLUMNS):
-                if (row % 2 == 0 and col % 2 == 0) or (row % 2 != 0 and col % 2 != 0):
-                    Board.draw_square(row, col, WHITE, window)
-
-    def draw_board(self, window: pygame.Surface) -> None:
-        self.draw_background(window)
-        self.draw_pieces(window)
-
-    def draw_pieces(self, window: pygame.Surface) -> None:
-        for row in range(ROWS):
-            for col in range(COLUMNS):
-                if isinstance(self.board[row][col], Piece):
-                    self.board[row][col].draw(window)
 
     def __init__(self) -> None:
         self.board = []

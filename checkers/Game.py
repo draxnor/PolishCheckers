@@ -5,14 +5,15 @@ from .Piece import Piece
 from .Move import Move
 from .SequenceOfMoves import SequenceOfMoves
 from .GameState import GameState
-from .constants import NONCAPTURE_QUEEN_MOVES_COUNT_LIMIT, BOARD_STATE_REPETITION_LIMIT, \
+from .game_constants import NON_CAPTURE_QUEEN_MOVES_COUNT_LIMIT, BOARD_STATE_REPETITION_LIMIT, \
     MOVES_COUNT_FOR_1V3_ENDGAME, MOVES_COUNT_FOR_1V2_ENDGAME, MOVES_COUNT_FOR_1V1_ENDGAME
+from .Graphics import Graphics
 
 
 class Game:
     def __init__(self, window: pygame.Surface) -> None:
         self._init()
-        self.window = window
+        self.graphics = Graphics(window)
 
     def _init(self) -> None:
         self.selected = None
@@ -21,7 +22,7 @@ class Game:
         self.valid_moves = []
         self.is_sequence_ongoing = False
         self.state = GameState.ONGOING
-        self.noncapture_queens_moves_count = 0
+        self.non_capture_queens_moves_count = 0
         self.move_count_to_draw = 0
         self.board_state_history = []
         self.save_board_state()
@@ -29,9 +30,9 @@ class Game:
 
     def update_display(self) -> None:
         print(self.state.name)
-        self.board.draw_background(self.window)
+        self.graphics.draw_background()
         self.draw_valid_moves_of_selected_piece()
-        self.board.draw_pieces(self.window)
+        self.graphics.draw_pieces(self.board)
         pygame.display.update()
 
     def reset(self) -> None:
@@ -41,7 +42,7 @@ class Game:
         # If piece marked as selected and move possible, process move.
         # If sequence is already ongoing, then invalid selections are ignored. You have to finish one of valid sequences
         # If move impossible or nothing was selected before, select new piece if possible.
-        row, col = Board.get_coordinates_from_mouse_pos(mouse_pos)
+        row, col = Graphics.get_board_coordinates_from_mouse_pos(mouse_pos) #todo This method should belong to Interface class
         if isinstance(self.selected, Piece):
             is_move_done = self._execute_move(row, col)
             if self.is_sequence_ongoing:
@@ -57,9 +58,6 @@ class Game:
             return
         self.selected = None
 
-    def execute_sequence(self, sequence: SequenceOfMoves):
-        pass #todo
-
     def save_board_state(self) -> None:
         self.board_state_history.append(self.board.deepcopy())
 
@@ -71,9 +69,9 @@ class Game:
 
     def _count_queen_moves_for_draw(self, last_made_move: Move) -> None:
         if self.selected.is_queen and not last_made_move.does_contain_capture():
-            self.noncapture_queens_moves_count += 1
+            self.non_capture_queens_moves_count += 1
         else:
-            self.noncapture_queens_moves_count = 0
+            self.non_capture_queens_moves_count = 0
 
     def _count_moves_for_endgame_draw(self, move_made: Move) -> None:
         if move_made.does_contain_capture():
@@ -82,7 +80,7 @@ class Game:
             self.move_count_to_draw += 1
 
     def _is_draw_by_queen_moves_count(self) -> bool:
-        return self.noncapture_queens_moves_count >= NONCAPTURE_QUEEN_MOVES_COUNT_LIMIT
+        return self.non_capture_queens_moves_count >= NON_CAPTURE_QUEEN_MOVES_COUNT_LIMIT
 
     def _is_draw_by_state_repetition(self) -> bool:
         repetition_count = 0
@@ -97,7 +95,7 @@ class Game:
 
     def _is_draw_by_1v1_queen_endgame(self) -> bool:
         return self.board.piece_count_detailed == (0, 1, 0, 1) and \
-               self.noncapture_queens_moves_count >= MOVES_COUNT_FOR_1V1_ENDGAME
+               self.non_capture_queens_moves_count >= MOVES_COUNT_FOR_1V1_ENDGAME
 
     def _is_draw_by_1v2_queen_endgame(self) -> bool:
         if self.board.piece_count_total == 3:
@@ -148,11 +146,11 @@ class Game:
     def get_valid_sequences_of_selected_piece(self) -> list[SequenceOfMoves]:
         return [sequence for sequence in self.valid_moves if sequence.moving_piece == self.selected]
 
-    def draw_valid_moves_of_selected_piece(self) -> None:
+    def draw_valid_moves_of_selected_piece(self) -> None: #todo This should belong to interface
         piece_valid_sequences = self.get_valid_sequences_of_selected_piece()
         for sequence in piece_valid_sequences:
-            sequence.draw_sequence(self.window)
-            sequence.draw_move_in_sequence_as_next_move(self.window)
+            self.graphics.draw_sequence(sequence)
+            self.graphics.draw_first_move_in_sequence_highlight(sequence)
 
     def _execute_move(self, destination_row: int, destination_col: int) -> bool:
         # try moving self.selected to destination
@@ -186,8 +184,4 @@ class Game:
         else:
             self.turn = Player.PLAYER_TOP
 
-    def _draw_given_sequences(self, valid_sequences: list[SequenceOfMoves]) -> None:
-        # Only for custom visualisation and debugging
-        for sequence in valid_sequences:
-            sequence.draw_sequence(self.window)
 

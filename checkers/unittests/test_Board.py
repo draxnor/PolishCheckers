@@ -3,7 +3,7 @@ from checkers.Player import Player
 from checkers.Piece import Piece
 from checkers.Board import Board
 from checkers.Move import Move
-from checkers.constants import ROWS, COLUMNS
+from checkers.game_constants import ROWS, COLUMNS
 
 
 class TestBoard(unittest.TestCase):

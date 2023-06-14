@@ -61,13 +61,6 @@ class SequenceOfMoves:
     def does_contain_capturing(self) -> bool:
         return any([move.does_contain_capture() for move in self._sequence])
 
-    def draw_sequence(self, window: pygame.Surface) -> None:
-        for move in self._sequence:
-            move.draw_move_destination_as_distant_move(window)
-
-    def draw_move_in_sequence_as_next_move(self, window: pygame.Surface, position: int = 0) -> None:
-        self._sequence[-position-1].draw_move_destination_as_closest_move(window)
-
     def is_empty(self) -> bool:
         return self.length == 0
 

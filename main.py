@@ -1,13 +1,20 @@
 import pygame
-from checkers.constants import FPS, WINDOW_WIDTH, WINDOW_HEIGHT, SQUARE_HEIGHT, SQUARE_WIDTH
+from checkers.graphics_constants import FPS, WINDOW_WIDTH, WINDOW_HEIGHT, ICON_PATH, WINDOW_CAPTION
 from checkers.Game import Game
+
+
+def set_display_window() -> pygame.Surface:
+    window = pygame.display.set_mode([WINDOW_WIDTH, WINDOW_HEIGHT])
+    icon = pygame.image.load(ICON_PATH)
+    pygame.display.set_icon(icon)
+    pygame.display.set_caption(WINDOW_CAPTION)
+    return window
 
 
 def main():
     pygame.init()
-    window = pygame.display.set_mode([WINDOW_WIDTH, WINDOW_HEIGHT])
-    pygame.display.set_caption('Polish Checkers by Paweł Mędyk')
     clock = pygame.time.Clock()
+    window = set_display_window()
     game = Game(window)
 
     running = True
