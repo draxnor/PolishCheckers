@@ -6,11 +6,18 @@ from .Move import Move
 from .game_constants import ROWS, COLUMNS
 from .graphics_constants import PIECE_RADIUS, CROWN_COLOR, SQUARE_HEIGHT, SQUARE_WIDTH, HIGHLIGHT_COLOR, \
                                 MOVE_DOT_RADIUS, CHECKERBOARD_BACKGROUND_COLOR, CHECKERBOARD_SQUARES_COLOR
+from .Game import Game
 
 
 class Graphics:
     def __init__(self, window: pygame.Surface) -> None:
         self.window = window
+
+    def draw_valid_moves_of_selected_piece(self, game: Game, selected_piece: Piece) -> None:
+        piece_valid_sequences = game.get_valid_sequences_of_a_piece(selected_piece)
+        for sequence in piece_valid_sequences:
+            self.draw_sequence(sequence)
+            self.draw_first_move_in_sequence_highlight(sequence)
 
     def draw_piece(self, piece: Piece) -> None:
         pygame.draw.circle(self.window, piece.color, piece.position_on_display, PIECE_RADIUS)
@@ -63,9 +70,3 @@ class Graphics:
         for sequence in valid_sequences:
             self.draw_sequence(sequence)
 
-    @staticmethod
-    def get_board_coordinates_from_mouse_pos(pos: tuple[int, int]) -> tuple[int, int]:
-        x, y = pos
-        row = y // SQUARE_HEIGHT
-        col = x // SQUARE_WIDTH
-        return row, col

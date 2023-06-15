@@ -7,8 +7,8 @@ from .Move import Move
 
 
 class SequenceOfMoves:
-    def __init__(self, piece: Piece, sequence_as_list: list[Move] = []) -> None:
-        self._moving_piece = piece
+    def __init__(self, moving_piece: Piece, sequence_as_list: list[Move] = []) -> None:
+        self._moving_piece = moving_piece
         self._sequence = sequence_as_list
 
     def __eq__(self, other: SequenceOfMoves) -> bool:
@@ -32,6 +32,11 @@ class SequenceOfMoves:
     def first_move(self) -> Move:
         if self._sequence:
             return self._sequence[-1]
+
+    @property
+    def last_move(self) -> Move:
+        if self._sequence:
+            return self._sequence[0]
 
     @property
     def sequence(self) -> list[Move]:

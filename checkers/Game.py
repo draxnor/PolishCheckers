@@ -7,77 +7,55 @@ from .SequenceOfMoves import SequenceOfMoves
 from .GameState import GameState
 from .game_constants import NON_CAPTURE_QUEEN_MOVES_COUNT_LIMIT, BOARD_STATE_REPETITION_LIMIT, \
     MOVES_COUNT_FOR_1V3_ENDGAME, MOVES_COUNT_FOR_1V2_ENDGAME, MOVES_COUNT_FOR_1V1_ENDGAME
-from .Graphics import Graphics
 
 
 class Game:
-    def __init__(self, window: pygame.Surface) -> None:
+    def __init__(self, player_starting_game: Player = Player.PLAYER_TOP) -> None:
         self._init()
-        self.graphics = Graphics(window)
 
-    def _init(self) -> None:
-        self.selected = None
+    def _init(self, player_starting_game: Player = Player.PLAYER_TOP) -> None:
         self.board = Board()
-        self.turn = Player.PLAYER_TOP
+        self.turn = player_starting_game
         self.valid_moves = []
-        self.is_sequence_ongoing = False
+        self.current_turn_sequence = None
         self.state = GameState.ONGOING
         self.non_capture_queens_moves_count = 0
-        self.move_count_to_draw = 0
+        self.non_capture_moves_count = 0
         self.board_state_history = []
         self.save_board_state()
         self.set_new_turn()
 
-    def update_display(self) -> None:
-        print(self.state.name)
-        self.graphics.draw_background()
-        self.draw_valid_moves_of_selected_piece()
-        self.graphics.draw_pieces(self.board)
-        pygame.display.update()
-
     def reset(self) -> None:
         self._init()
-
-    def select(self, mouse_pos: tuple[int, int]) -> None:
-        # If piece marked as selected and move possible, process move.
-        # If sequence is already ongoing, then invalid selections are ignored. You have to finish one of valid sequences
-        # If move impossible or nothing was selected before, select new piece if possible.
-        row, col = Graphics.get_board_coordinates_from_mouse_pos(mouse_pos) #todo This method should belong to Interface class
-        if isinstance(self.selected, Piece):
-            is_move_done = self._execute_move(row, col)
-            if self.is_sequence_ongoing:
-                return
-            if is_move_done:  # (and not self.is_sequence_ongoing)
-                self.selected = None
-                self.change_turn()
-                self.set_new_turn()
-                return
-        new_selection = self.board.get_piece(row, col)
-        if isinstance(new_selection, Piece) and new_selection.player == self.turn:
-            self.selected = new_selection
-            return
-        self.selected = None
 
     def save_board_state(self) -> None:
         self.board_state_history.append(self.board.deepcopy())
 
-    def set_new_turn(self) -> None:
+    def end_current_turn(self):
+        self._count_queen_moves_for_draw()
+        self._count_moves_for_endgame_draw()
         self.board.perform_pieces_promotions()
+
+    def set_new_turn(self) -> None:
         self.update_valid_moves()
         self.save_board_state()
         self.update_game_state()
 
-    def _count_queen_moves_for_draw(self, last_made_move: Move) -> None:
-        if self.selected.is_queen and not last_made_move.does_contain_capture():
+    def _count_queen_moves_for_draw(self) -> None:
+        assert(self.current_turn_sequence is not None, 'Cannot sum up turn where no move was done.')
+        last_move_made = self.current_turn_sequence.last_move
+        if last_move_made.moving_piece.is_queen and not last_move_made.does_contain_capture():
             self.non_capture_queens_moves_count += 1
         else:
             self.non_capture_queens_moves_count = 0
 
-    def _count_moves_for_endgame_draw(self, move_made: Move) -> None:
-        if move_made.does_contain_capture():
-            self.move_count_to_draw = 0
+    def _count_moves_for_endgame_draw(self) -> None:
+        assert(self.current_turn_sequence is not None, 'Cannot sum up turn where no move was done.')
+        last_move_made = self.current_turn_sequence.last_move
+        if last_move_made.does_contain_capture():
+            self.non_capture_moves_count = 0
         else:
-            self.move_count_to_draw += 1
+            self.non_capture_moves_count += 1
 
     def _is_draw_by_queen_moves_count(self) -> bool:
         return self.non_capture_queens_moves_count >= NON_CAPTURE_QUEEN_MOVES_COUNT_LIMIT
@@ -100,16 +78,16 @@ class Game:
     def _is_draw_by_1v2_queen_endgame(self) -> bool:
         if self.board.piece_count_total == 3:
             if self.board.player_bottom_kings_count >= 1 and self.board.player_top_kings_count >= 1:
-                if self.move_count_to_draw >= MOVES_COUNT_FOR_1V2_ENDGAME:
+                if self.non_capture_moves_count >= MOVES_COUNT_FOR_1V2_ENDGAME:
                     return True
         return False
 
     def _is_draw_by_1v3_queen_endgame(self) -> bool:
         if self.board.piece_count_total == 4:
             if self.board.player_bottom_kings_count >= 1 and self.board.player_top_kings_count >= 1:
-                if (self.board.player_bottom_kings_count == 1 and self.board.player_bottom_men_count) or\
-                    (self.board.player_top_kings_count == 1 and self.board.player_top_men_count):
-                    if self.move_count_to_draw >= MOVES_COUNT_FOR_1V3_ENDGAME:
+                if (self.board.player_bottom_kings_count == 1 and self.board.player_bottom_men_count) or \
+                        (self.board.player_top_kings_count == 1 and self.board.player_top_men_count):
+                    if self.non_capture_moves_count >= MOVES_COUNT_FOR_1V3_ENDGAME:
                         return True
         return False
 
@@ -143,40 +121,30 @@ class Game:
     def update_valid_moves(self) -> None:
         self.valid_moves = self.board.get_valid_moves(self.turn)
 
-    def get_valid_sequences_of_selected_piece(self) -> list[SequenceOfMoves]:
-        return [sequence for sequence in self.valid_moves if sequence.moving_piece == self.selected]
+    def get_valid_sequences_of_a_piece(self, piece: Piece) -> list[SequenceOfMoves]:
+        return [sequence for sequence in self.valid_moves if sequence.moving_piece == piece]
 
-    def draw_valid_moves_of_selected_piece(self) -> None: #todo This should belong to interface
-        piece_valid_sequences = self.get_valid_sequences_of_selected_piece()
-        for sequence in piece_valid_sequences:
-            self.graphics.draw_sequence(sequence)
-            self.graphics.draw_first_move_in_sequence_highlight(sequence)
-
-    def _execute_move(self, destination_row: int, destination_col: int) -> bool:
-        # try moving self.selected to destination
-        # create list of sequences that contains
-        move_to_make = Move(self.selected.row, self.selected.col, destination_row, destination_col)
-        is_move_possible = False
-
+    def execute_single_move(self, move_to_make: Move) -> tuple[bool, bool]:
+        can_move_be_done = False
+        can_sequence_be_continued = False
         sequences_that_contained_move = []
         for seq in self.valid_moves:
             if move_to_make.is_same_origin_and_destination(seq.first_move):
-                is_move_possible = True
-                move_to_make = seq.pop()
+                can_move_be_done = True
+                move_to_make = seq.pop()  # get rest of the details about move
                 if not seq.is_empty():
                     sequences_that_contained_move.append(seq)
-        if is_move_possible:
-            self.board.perform_move(self.selected, move_to_make)
-            if sequences_that_contained_move:
-                self.is_sequence_ongoing = True
-            else:
-                self.is_sequence_ongoing = False
-                self._count_queen_moves_for_draw(move_to_make)
-                self._count_moves_for_endgame_draw(move_to_make)
+        if can_move_be_done:
+            self.board.perform_move(move_to_make)
             self.valid_moves = sequences_that_contained_move
-            return True
-        else:
-            return False
+            can_sequence_be_continued = True if self.valid_moves else False
+            if self.current_turn_sequence is None:
+                self.current_turn_sequence = SequenceOfMoves(move_to_make.moving_piece, [move_to_make])
+            else:
+                assert(isinstance(self.current_turn_sequence, SequenceOfMoves),
+                       'Could not update current turn sequence after performing single move')
+                self.current_turn_sequence.add_next_move(move_to_make)
+        return can_move_be_done, can_sequence_be_continued
 
     def change_turn(self) -> None:
         if self.turn == Player.PLAYER_TOP:
@@ -184,4 +152,16 @@ class Game:
         else:
             self.turn = Player.PLAYER_TOP
 
+    def execute_sequence(self, sequence_to_make: SequenceOfMoves) -> bool:
+        #No conditions for executing sequence because of speed issues
+        self.current_turn_sequence = sequence_to_make
+        self.valid_moves.clear()
+        for move in self.current_turn_sequence.sequence:
+            self.board.perform_move(move)
+        return True
 
+    def execute_sequence_and_set_new_turn(self, sequence_to_make: SequenceOfMoves) -> bool:
+        success = self.execute_sequence(sequence_to_make)
+        self.end_current_turn()
+        self.change_turn()
+        self.set_new_turn()

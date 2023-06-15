@@ -1,6 +1,7 @@
 import pygame
 from checkers.graphics_constants import FPS, WINDOW_WIDTH, WINDOW_HEIGHT, ICON_PATH, WINDOW_CAPTION
 from checkers.Game import Game
+from checkers.GameInterface import GameInterface
 
 
 def set_display_window() -> pygame.Surface:
@@ -16,18 +17,19 @@ def main():
     clock = pygame.time.Clock()
     window = set_display_window()
     game = Game(window)
+    game_interface = GameInterface(game, window)
 
     running = True
     while running:
         clock.tick(FPS)
 
-        game.update_display()
+        game_interface.update_display()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
-                game.select(mouse_pos)
+                game_interface.select(mouse_pos)
 
     pygame.quit()
 

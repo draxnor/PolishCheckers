@@ -24,7 +24,7 @@ class TestBoard(unittest.TestCase):
     def test_get_possible_noncapture_moves_for_man(self):
         board = Board()
         piece = board.get_piece(0, 1)
-        moves = board._get_potential_noncapture_sequences_for_man(piece)
+        moves = board._get_potential_non_capture_sequences_for_man(piece)
         self.assertListEqual(moves, [])
 
     def test_get_possible_captures_for_man_from_field(self):

@@ -96,13 +96,14 @@ class Board:
                         potential_sequences += self._get_potential_sequences_for_piece(piece)
         return potential_sequences
 
-    def perform_move(self, piece_moving: Piece, move: Move):
-        assert(piece_moving.row == move.origin_row and piece_moving.col == move.origin_col)
+    def perform_move(self, move: Move):
+        assert(move.moving_piece.row == move.origin_row and move.moving_piece.col == move.origin_col)
         origin_row, origin_col = move.origin
         dest_row, dest_col = move.destination
 
-        self.board[origin_row][origin_col], self.board[dest_row][dest_col] = self.board[dest_row][dest_col], self.board[origin_row][origin_col]
-        piece_moving.move(dest_row, dest_col)
+        self.board[origin_row][origin_col], self.board[dest_row][dest_col] = \
+            self.board[dest_row][dest_col], self.board[origin_row][origin_col]
+        move.moving_piece.move(dest_row, dest_col)
         if move.does_contain_capture():
             self._remove_piece(move.captured_piece)
 
@@ -133,17 +134,17 @@ class Board:
         if piece.is_queen:
             moves = self._get_potential_capture_sequences_for_queen(piece, piece.row, piece.col)
             if not moves:
-                moves = self._get_potential_noncapture_sequences_for_queen(piece)
+                moves = self._get_potential_non_capture_sequences_for_queen(piece)
         else:
             moves = self._get_potential_capture_sequences_for_man(piece, piece.row, piece.col)
             if not moves:
-                moves = self._get_potential_noncapture_sequences_for_man(piece)
+                moves = self._get_potential_non_capture_sequences_for_man(piece)
         if moves:
             max_number_of_captures = max([sequence.length for sequence in moves])
             moves = [sequence for sequence in moves if sequence.length == max_number_of_captures]
         return moves
 
-    def _get_potential_noncapture_sequences_for_man(self, piece: Piece) -> list[SequenceOfMoves]:
+    def _get_potential_non_capture_sequences_for_man(self, piece: Piece) -> list[SequenceOfMoves]:
         list_of_sequences = []
         left_col = piece.col - 1
         right_col = piece.col + 1
@@ -153,10 +154,12 @@ class Board:
             target_row = piece.row - 1
         if not self.is_out_of_bound(target_row, left_col):
             if self.board[target_row][left_col] == 0:
-                list_of_sequences.append(SequenceOfMoves(piece, [Move(piece.row, piece.col, target_row, left_col)]))
+                list_of_sequences.append(
+                    SequenceOfMoves(piece, [Move(piece, piece.row, piece.col, target_row, left_col)]))
         if not self.is_out_of_bound(target_row, right_col):
             if self.board[target_row][right_col] == 0:
-                list_of_sequences.append(SequenceOfMoves(piece, [Move(piece.row, piece.col, target_row, right_col)]))
+                list_of_sequences.append(
+                    SequenceOfMoves(piece, [Move(piece, piece.row, piece.col, target_row, right_col)]))
         return list_of_sequences
 
     def _get_potential_capture_sequences_for_man(self, piece: Piece, row: int, col: int,
@@ -175,7 +178,7 @@ class Board:
                             field_behind_rival_piece_content = self.get_piece(row_after_capture, col_after_capture)
                             # if field behind rival piece is empty or would be empty after moving current piece
                             if field_behind_rival_piece_content == 0 or field_behind_rival_piece_content == piece:
-                                current_move = Move(row, col, row_after_capture, col_after_capture, field_content)
+                                current_move = Move(piece, row, col, row_after_capture, col_after_capture, field_content)
                                 # modify copy of list of captured pieces as original is needed for next loop iteration
                                 updated_captured_pieces = captured_pieces + [field_content]
                                 # pass list of captured pieces in current sequence including one made in this iteration
@@ -202,7 +205,7 @@ class Board:
                         field_content = self.get_piece(row_examined, col_examined)
                         if field_content != 0 and field_content != piece:  # piece is not an obstacle for itself
                                 break
-                        current_move = Move(row, col, row_examined, col_examined, enemy_piece)
+                        current_move = Move(piece, row, col, row_examined, col_examined, enemy_piece)
                         updated_captured_pieces = captured_pieces + [enemy_piece]
                         sequence_continuation = self._get_potential_capture_sequences_for_queen(piece, row_examined, col_examined, updated_captured_pieces)
                         if sequence_continuation:
@@ -215,7 +218,7 @@ class Board:
                         col_examined += horizontal_step
         return possible_sequences
 
-    def _get_potential_noncapture_sequences_for_queen(self, piece: Piece) -> list[SequenceOfMoves]:
+    def _get_potential_non_capture_sequences_for_queen(self, piece: Piece) -> list[SequenceOfMoves]:
         possible_sequences = []
         for vertical_step in (-1, 1):
             for horizontal_step in (-1, 1):  # for every diagonal
@@ -225,7 +228,7 @@ class Board:
                     field_content = self.get_piece(examined_row, examined_col)
                     if field_content != 0:
                         break
-                    current_move = Move(piece.row, piece.col, examined_row, examined_col)
+                    current_move = Move(piece, piece.row, piece.col, examined_row, examined_col)
                     possible_sequences.append(SequenceOfMoves(piece, [current_move]))
                     examined_row += vertical_step
                     examined_col += horizontal_step
