@@ -25,6 +25,20 @@ class Game:
         self.save_board_state()
         self.set_new_turn()
 
+    def deepcopy(self):
+        cls = self.__class__
+        new_game = cls.__new__(cls)
+        new_game.__dict__.update(self.__dict__)
+        new_game.board = self.board.deepcopy()
+        new_game.turn = self.turn
+        new_game.valid_moves = self.valid_moves.copy()
+        new_game.current_turn_sequence = self.current_turn_sequence
+        new_game.state = self.state
+        new_game.non_capture_queens_moves_count = self.non_capture_queens_moves_count
+        new_game.non_capture_moves_count = self.non_capture_queens_moves_count
+        new_game.board_state_history = self.board_state_history.copy()
+        return new_game
+
     def reset(self) -> None:
         self._init()
 
@@ -85,8 +99,8 @@ class Game:
     def _is_draw_by_1v3_queen_endgame(self) -> bool:
         if self.board.piece_count_total == 4:
             if self.board.player_bottom_kings_count >= 1 and self.board.player_top_kings_count >= 1:
-                if (self.board.player_bottom_kings_count == 1 and self.board.player_bottom_men_count) or \
-                        (self.board.player_top_kings_count == 1 and self.board.player_top_men_count):
+                if (self.board.player_bottom_kings_count == 1 and self.board.player_bottom_men_count == 0) or \
+                        (self.board.player_top_kings_count == 1 and self.board.player_top_men_count == 0):
                     if self.non_capture_moves_count >= MOVES_COUNT_FOR_1V3_ENDGAME:
                         return True
         return False
@@ -156,7 +170,7 @@ class Game:
         #No conditions for executing sequence because of speed issues
         self.current_turn_sequence = sequence_to_make
         self.valid_moves.clear()
-        for move in self.current_turn_sequence.sequence:
+        for move in self.current_turn_sequence.sequence[::-1]:
             self.board.perform_move(move)
         return True
 
@@ -165,3 +179,23 @@ class Game:
         self.end_current_turn()
         self.change_turn()
         self.set_new_turn()
+        return success
+
+    def is_game_over(self):
+        return self.state != GameState.ONGOING
+
+    def initialize_from_custom_state(self):
+        for row in range(10):
+            for col in range(10):
+                self.board.board[row][col] = 0
+        self.board.board[3][2] = Piece(3,2,Player.PLAYER_TOP)
+        self.board.board[3][2].promote()
+        self.board.board[1][0] = Piece(1, 0, Player.PLAYER_BOTTOM)
+        self.board.board[0][3] = Piece(0, 3, Player.PLAYER_BOTTOM)
+        self.board.board[7][4] = Piece(7, 4, Player.PLAYER_BOTTOM)
+        self.board.board[7][4].promote()
+        self.board._recalculate_pieces_count()
+        self.board_state_history = []
+        self.save_board_state()
+        self.set_new_turn()
+

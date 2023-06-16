@@ -22,14 +22,19 @@ def main():
     running = True
     while running:
         clock.tick(FPS)
-
         game_interface.update_display()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 game_interface.select(mouse_pos)
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    game_interface.reset()
+                if event.key == pygame.K_ESCAPE:
+                    running = False
 
     pygame.quit()
 

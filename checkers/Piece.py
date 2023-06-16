@@ -23,6 +23,16 @@ class Piece:
         representation = str((self.row, self.col)) + '(' + piece_type + '_' + player_info + ')'
         return representation
 
+    def copy(self):
+        cls = self.__class__
+        new_piece = cls.__new__(cls)
+        new_piece.__dict__.update(self.__dict__)
+        new_piece.row = self.row
+        new_piece.col = self.col
+        new_piece.player = self.player
+        new_piece.is_queen = self.is_queen
+        return new_piece
+
     @property
     def color(self) -> tuple[int, int, int]:
         if self.player == Player.PLAYER_TOP:

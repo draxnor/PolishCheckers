@@ -5,8 +5,10 @@ from .SequenceOfMoves import SequenceOfMoves
 from .Move import Move
 from .game_constants import ROWS, COLUMNS
 from .graphics_constants import PIECE_RADIUS, CROWN_COLOR, SQUARE_HEIGHT, SQUARE_WIDTH, HIGHLIGHT_COLOR, \
-                                MOVE_DOT_RADIUS, CHECKERBOARD_BACKGROUND_COLOR, CHECKERBOARD_SQUARES_COLOR
+                                MOVE_DOT_RADIUS, CHECKERBOARD_BACKGROUND_COLOR, CHECKERBOARD_SQUARES_COLOR, \
+                                WINDOW_WIDTH, WINDOW_HEIGHT
 from .Game import Game
+from .GameState import GameState
 
 
 class Graphics:
@@ -70,3 +72,9 @@ class Graphics:
         for sequence in valid_sequences:
             self.draw_sequence(sequence)
 
+    def draw_game_over_message(self, game: Game):
+        text = game.state.name
+        font = pygame.font.Font(None, 128)
+        game_over_text = font.render(text, True, (255, 50, 0))
+        text_rect = game_over_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
+        self.window.blit(game_over_text, text_rect)

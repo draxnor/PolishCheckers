@@ -60,7 +60,7 @@ class Board:
         cls = self.__class__
         new_object = cls.__new__(cls)
         new_object.__dict__.update(self.__dict__)
-        new_object.board = [[piece for piece in row] for row in self.board]
+        new_object.board = [[piece.copy() if isinstance(piece, Piece) else piece for piece in row] for row in self.board]
         new_object.player_top_men_count = self.player_top_men_count
         new_object.player_bottom_men_count = self.player_bottom_men_count
         new_object.player_top_kings_count = self.player_top_kings_count
@@ -97,13 +97,13 @@ class Board:
         return potential_sequences
 
     def perform_move(self, move: Move):
-        assert(move.moving_piece.row == move.origin_row and move.moving_piece.col == move.origin_col)
+        # assert(move.moving_piece.row == move.origin_row and move.moving_piece.col == move.origin_col)
         origin_row, origin_col = move.origin
         dest_row, dest_col = move.destination
 
-        self.board[origin_row][origin_col], self.board[dest_row][dest_col] = \
-            self.board[dest_row][dest_col], self.board[origin_row][origin_col]
-        move.moving_piece.move(dest_row, dest_col)
+        self.board[dest_row][dest_col] = self.board[origin_row][origin_col]
+        self.board[origin_row][origin_col] = 0
+        self.board[dest_row][dest_col].move(dest_row, dest_col)
         if move.does_contain_capture():
             self._remove_piece(move.captured_piece)
 
