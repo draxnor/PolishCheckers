@@ -30,13 +30,10 @@ def display_options_screen(window: pygame.Surface, clock: pygame.time.Clock, gam
                 button_selected = options_screen.select(mouse_pos)
                 if button_selected == OptionsButton.BUTTON_GO_TO_MAIN_MENU:
                     running = False
-                else:
-                    options_screen.process(button_selected)
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    running = False
+                running = options_screen.process_keyboard_input(event)
             if event.type == pygame.QUIT:
-                running = False
+                return False
     return True
 
 

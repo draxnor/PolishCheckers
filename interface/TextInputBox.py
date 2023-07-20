@@ -13,8 +13,12 @@ class TextInputBox(Button):
                  text_size: int = MENU_BUTTON_TEXT_SIZE,
                  is_active: bool = False,
                  is_visible: bool = True,
-                 bg_highlight_color: tuple[int, int, int] = BUTTON_BG_HIGHLIGHT_COLOR) -> None:
+                 bg_highlight_color: tuple[int, int, int] = BUTTON_BG_HIGHLIGHT_COLOR,
+                 is_digit_only: bool  = False,
+                 max_text_length: int = 1) -> None:
         self.temp_text = ''
+        self.is_digit_only = is_digit_only
+        self.max_text_length = max_text_length
         super().__init__(left, top, width, height, text, bg_color, text_color, font, text_size,
                          is_active, is_visible, bg_highlight_color)
 
@@ -28,9 +32,19 @@ class TextInputBox(Button):
             self.temp_text = self.temp_text[:-1]
 
     def confirm_text_changes(self):
+        if self.temp_text == '':
+            self.reject_text_changes()
+            return self.text
+        if len(self.temp_text) > self.max_text_length:
+            self.temp_text = self.temp_text[0:self.max_text_length]
+        if self.is_digit_only:
+            if not self.temp_text.isdigit():
+                self.reject_text_changes()
+                return self.text
         self.text = self.temp_text
         self.temp_text = ''
         self.deactivate()
+        return self.text
 
     def reject_text_changes(self):
         self.temp_text = ''
@@ -47,8 +61,11 @@ class TextInputBox(Button):
             self.remove_character()
         if event.unicode.isprintable():
             self.add_character(event.unicode)
+        return self.text
 
     def draw(self, window: pygame.Surface):
+        if not self.is_visible:
+            return
         if self.is_active:
             bg_color = self.bg_highlight_color
             displayed_text = self.temp_text + '|'
@@ -64,3 +81,5 @@ class TextInputBox(Button):
             top = min(WINDOW_HEIGHT - text_img.get_height(), max(0, button_center[1] - text_img.get_height() // 2))
             window.blit(text_img, (left, top))
 
+    def clear(self):
+        self.temp_text = ''

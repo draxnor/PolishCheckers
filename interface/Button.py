@@ -70,3 +70,6 @@ class Button:
     def hide(self):
         self.is_visible = False
 
+    def is_hidden(self):
+        return not self.is_visible
+
