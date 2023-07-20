@@ -35,8 +35,7 @@ class OptionsScreen:
         self.COLUMNS_TO_MIDDLE_DISTANCE = 150
         self.text_fields = self._init_text_fields()
         self.buttons = self._init_buttons()
-
-        # self.update()
+        self.update()
 
     def _init_text_fields(self):
         text_fields = {OptionsTextFields.STARTING_SIDE:
@@ -95,48 +94,44 @@ class OptionsScreen:
         return buttons
 
     def update(self):
-        self._update_starting_player_buttons()
-        self._update_starting_player_side()
-        self._update_game_mode_buttons()
-        self._update_ai_level_boxes()
+        self._deactivate_all_buttons()
+        self._activate_starting_side_button()
+        self._activate_player_type_buttons()
+        self._update_ai_lvl_boxes()
 
-    def _update_ai_level_boxes(self):
-        pass #todo
+    def _deactivate_all_buttons(self):
+        for button in self.buttons.values():
+            button.deactivate()
 
-    def _update_starting_player_side(self):
-        player_side_buttons_keys = [OptionsButton.BUTTON_STARTING_PLAYER_COLOR_BOTTOM,
-                                    OptionsButton.BUTTON_STARTING_PLAYER_COLOR_TOP]
-        for key in player_side_buttons_keys:
-            self.buttons[key].deactivate()
-        if self.options.starting_player_side == PlayerSide.TOP:
-            self.buttons[OptionsButton.BUTTON_STARTING_PLAYER_COLOR_TOP].activate()
-        if self.options.starting_player_side == PlayerSide.BOTTOM:
-            self.buttons[OptionsButton.BUTTON_STARTING_PLAYER_COLOR_BOTTOM].activate()
+    def _update_ai_lvl_boxes(self):
+        if self.options.top_player_type == PlayerType.Human:
+            self.buttons[OptionsButton.TEXTBOX_AI_TOP_LVL].hide()
+            self.text_fields[OptionsTextFields.AI_TOP_LVL].hide()
+        else:
+            self.buttons[OptionsButton.TEXTBOX_AI_TOP_LVL].unhide()
+            self.text_fields[OptionsTextFields.AI_TOP_LVL].unhide()
+        if self.options.bottom_player_type == PlayerType.Human:
+            self.buttons[OptionsButton.TEXTBOX_AI_BOTTOM_LVL].hide()
+            self.text_fields[OptionsTextFields.AI_BOTTOM_LVL].hide()
+        else:
+            self.buttons[OptionsButton.TEXTBOX_AI_BOTTOM_LVL].unhide()
+            self.text_fields[OptionsTextFields.AI_BOTTOM_LVL].unhide()
 
-    def _update_starting_player_buttons(self):
-        starting_player_buttons_keys = [OptionsButton.BUTTON_STARTING_PLAYER_1,
-                                   OptionsButton.BUTTON_STARTING_PLAYER_2]
-        for key in starting_player_buttons_keys:
-            self.buttons[key].deactivate()
+    def _activate_starting_side_button(self):
+        if self.options.starting_side == PlayerSide.TOP:
+            self.buttons[OptionsButton.BUTTON_STARTING_SIDE_TOP].activate()
+        if self.options.starting_side == PlayerSide.BOTTOM:
+            self.buttons[OptionsButton.BUTTON_STARTING_SIDE_BOTTOM].activate()
 
-        if self.options.starting_player == PlayerNumbered.Player1:
-            self.buttons[OptionsButton.BUTTON_STARTING_PLAYER_1].activate()
-        if self.options.starting_player == PlayerNumbered.Player2:
-            self.buttons[OptionsButton.BUTTON_STARTING_PLAYER_2].activate()
-
-
-    def _update_game_mode_buttons(self):
-        game_mode_buttons_keys = [OptionsButton.BUTTON_GAME_MODE_PVP,
-                             OptionsButton.BUTTON_GAME_MODE_PVAI,
-                             OptionsButton.BUTTON_GAME_MODE_AIVAI]
-        for key in game_mode_buttons_keys:
-            self.buttons[key].deactivate()
-        if self.options.game_mode == GameMode.Human_vs_Human:
-            self.buttons[OptionsButton.BUTTON_GAME_MODE_PVP].activate()
-        if self.options.game_mode == GameMode.Human_vs_AI:
-            self.buttons[OptionsButton.BUTTON_GAME_MODE_PVAI].activate()
-        if self.options.game_mode == GameMode.AI_vs_AI:
-            self.buttons[OptionsButton.BUTTON_GAME_MODE_AIVAI].activate()
+    def _activate_player_type_buttons(self):
+        if self.options.top_player_type == PlayerType.Human:
+            self.buttons[OptionsButton.BUTTON_PLAYER_TOP_HUMAN].activate()
+        else:
+            self.buttons[OptionsButton.BUTTON_PLAYER_TOP_AI].activate()
+        if self.options.bottom_player_type == PlayerType.Human:
+            self.buttons[OptionsButton.BUTTON_PLAYER_BOTTOM_HUMAN].activate()
+        else:
+            self.buttons[OptionsButton.BUTTON_PLAYER_BOTTOM_AI].activate()
 
     def draw(self):
         self.window.fill(MENU_BACKGROUND_COLOR)

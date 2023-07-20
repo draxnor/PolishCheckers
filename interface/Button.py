@@ -64,9 +64,9 @@ class Button:
     def set_text(self, new_text: str):
         self.text = new_text
 
-    def make_visible(self):
+    def unhide(self):
         self.is_visible = True
 
-    def make_hidden(self):
+    def hide(self):
         self.is_visible = False
 
