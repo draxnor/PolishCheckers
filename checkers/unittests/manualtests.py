@@ -17,7 +17,7 @@ def run_test():
     print('Copy:')
     print(board_copied.board[0])
 
-    print('Copy:')
+    print('Deep copy:')
     print(board_deepcopied.board[0])
 
 

@@ -1,7 +1,5 @@
 from __future__ import annotations
-import pygame
 from .game_constants import *
-from .graphics_constants import SQUARE_HEIGHT, SQUARE_WIDTH
 from .Piece import Piece
 from .Player import Player
 from .Move import Move

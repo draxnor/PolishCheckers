@@ -45,7 +45,12 @@ class Game:
     def save_board_state(self) -> None:
         self.board_state_history.append(self.board.deepcopy())
 
-    def end_current_turn(self):
+    def end_turn(self):
+        self.summarize_current_turn()
+        self.change_turn()
+        self.set_new_turn()
+
+    def summarize_current_turn(self):
         self._count_queen_moves_for_draw()
         self._count_moves_for_endgame_draw()
         self.board.perform_pieces_promotions()
@@ -176,7 +181,7 @@ class Game:
 
     def execute_sequence_and_set_new_turn(self, sequence_to_make: SequenceOfMoves) -> bool:
         success = self.execute_sequence(sequence_to_make)
-        self.end_current_turn()
+        self.summarize_current_turn()
         self.change_turn()
         self.set_new_turn()
         return success

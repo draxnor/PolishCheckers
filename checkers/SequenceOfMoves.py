@@ -25,7 +25,7 @@ class SequenceOfMoves:
 
     def __repr__(self) -> str:
         header = f'Sequence contains {self.length} moves:'
-        moves_description = '\n'.join([str(move) for move in self._sequence])
+        moves_description = '\n'.join([str(move) for move in self._sequence[::-1]])
         return header + '\n' + moves_description + '\n'
 
     @property

@@ -1,5 +1,4 @@
 from __future__ import annotations
-from .graphics_constants import SQUARE_HEIGHT, SQUARE_WIDTH, PLAYER_TOP_COLOR, PLAYER_BOTTOM_COLOR
 from .game_constants import ROWS
 from .Player import Player
 
@@ -34,13 +33,6 @@ class Piece:
         return new_piece
 
     @property
-    def color(self) -> tuple[int, int, int]:
-        if self.player == Player.PLAYER_TOP:
-            return PLAYER_TOP_COLOR
-        elif self.player == Player.PLAYER_BOTTOM:
-            return PLAYER_BOTTOM_COLOR
-
-    @property
     def is_ready_to_promote(self) -> bool:
         if self.is_queen:
             return False
@@ -49,13 +41,6 @@ class Piece:
         if self.player == Player.PLAYER_TOP and self.row == ROWS-1:
             return True
         return False
-
-    @property
-    def position_on_display(self) -> tuple[int, int]:
-        # Returns center of the square that piece is displayed on
-        y = self.row * SQUARE_HEIGHT + SQUARE_HEIGHT//2
-        x = self.col * SQUARE_WIDTH + SQUARE_WIDTH//2
-        return x, y
 
     def promote(self) -> None:
         self.is_queen = True
