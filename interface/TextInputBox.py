@@ -14,7 +14,7 @@ class TextInputBox(Button):
                  is_active: bool = False,
                  is_visible: bool = True,
                  bg_highlight_color: tuple[int, int, int] = BUTTON_BG_HIGHLIGHT_COLOR,
-                 is_digit_only: bool  = False,
+                 is_digit_only: bool = False,
                  max_text_length: int = 1) -> None:
         self.temp_text = ''
         self.is_digit_only = is_digit_only
@@ -52,7 +52,7 @@ class TextInputBox(Button):
 
     def process_keydown(self, event: pygame.event.Event):
         if not self.is_active:
-            return
+            return self.text
         if event.key == pygame.K_RETURN:
             self.confirm_text_changes()
         if event.key == pygame.K_ESCAPE:

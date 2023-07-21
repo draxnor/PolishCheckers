@@ -59,7 +59,7 @@ class OptionsScreen:
                                      'AI DIFFICULTY'),
                        OptionsTextFields.AI_LVL_HINT:
                            TextField((WINDOW_WIDTH // 2, 720),
-                                     'Difficulty from 1 to 10.', text_size=OPTIONS_TEXT_SIZE),
+                                     'Difficulty from 0 to 9.', text_size=OPTIONS_TEXT_SIZE),
                        OptionsTextFields.AI_LVL_HINT2:
                            TextField((WINDOW_WIDTH // 2, 750),
                                      'For difficulty higher than 6, computations may take a while!',
@@ -96,14 +96,14 @@ class OptionsScreen:
                               buttons_width, buttons_height, 'AI', text_size=OPTIONS_TEXT_SIZE),
                    OptionsButton.TEXTBOX_AI_TOP_LVL:
                        TextInputBox(left_column_margin,
-                              580,
-                              buttons_width, buttons_height, '5', text_size=OPTIONS_TEXT_SIZE,
-                                    is_digit_only=True, max_text_length=1),
+                                    580,
+                                    buttons_width, buttons_height, str(self.options.top_ai_depth),
+                                    text_size=OPTIONS_TEXT_SIZE, is_digit_only=True, max_text_length=1),
                    OptionsButton.TEXTBOX_AI_BOTTOM_LVL:
                        TextInputBox(right_column_margin,
-                              580,
-                              buttons_width, buttons_height, '4', text_size=OPTIONS_TEXT_SIZE,
-                                    is_digit_only=True, max_text_length=1),
+                                    580,
+                                    buttons_width, buttons_height, str(self.options.bottom_ai_depth),
+                                    text_size=OPTIONS_TEXT_SIZE, is_digit_only=True, max_text_length=1),
                    OptionsButton.BUTTON_GO_TO_MAIN_MENU:
                        Button(WINDOW_WIDTH // 2 - 500 // 2,
                               850,
@@ -223,9 +223,16 @@ class OptionsScreen:
             else:
                 return True
         try:
-            self.buttons[self.selected].process_keydown(event)
+            text = self.buttons[self.selected].process_keydown(event)
+            new_ai_lvl = int(text)
+            if self.selected == OptionsButton.TEXTBOX_AI_TOP_LVL:
+                self.options.set_top_ai_depth(new_ai_lvl)
+            elif self.selected == OptionsButton.TEXTBOX_AI_BOTTOM_LVL:
+                self.options.set_bottom_ai_depth(new_ai_lvl)
             return True
         except AttributeError:
             print('Cannot reject text changes in "OptionsScreen.process_keyboard_input()"', file=sys.stderr)
-
-
+        except ValueError:
+            print('Error while converting AI difficulty from text to number', file=sys.stderr)
+        except TypeError:
+            print('Was trying to convert:', text, ord(text), 'to integer.', file=sys.stderr)

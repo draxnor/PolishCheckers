@@ -11,7 +11,7 @@ from .game_constants import NON_CAPTURE_QUEEN_MOVES_COUNT_LIMIT, BOARD_STATE_REP
 
 class Game:
     def __init__(self, player_starting_game: Player = Player.PLAYER_TOP) -> None:
-        self._init()
+        self._init(player_starting_game)
 
     def _init(self, player_starting_game: Player = Player.PLAYER_TOP) -> None:
         self.board = Board()

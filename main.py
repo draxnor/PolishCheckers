@@ -1,6 +1,6 @@
 import pygame
 from graphics.graphics_constants\
-    import FPS, WINDOW_WIDTH, WINDOW_HEIGHT, ICON_PATH, WINDOW_CAPTION, MENU_BACKGROUND_COLOR
+    import FPS, WINDOW_WIDTH, WINDOW_HEIGHT, ICON_PATH, WINDOW_CAPTION
 from checkers.Game import Game
 from interface.GameInterface import GameInterface, SelectionStatus
 from interface.Menu import MenuButtons, Menu
@@ -16,7 +16,9 @@ def set_display_window() -> pygame.Surface:
     return window
 
 
-def display_options_screen(window: pygame.Surface, clock: pygame.time.Clock, gameplay_options: GameplayOptions) -> bool:
+def display_options_screen(window: pygame.Surface,
+                           clock: pygame.time.Clock,
+                           gameplay_options: GameplayOptions) -> tuple[bool, GameplayOptions]:
     options_screen = OptionsScreen(window, gameplay_options)
     running = True
     while running:
@@ -33,20 +35,18 @@ def display_options_screen(window: pygame.Surface, clock: pygame.time.Clock, gam
             if event.type == pygame.KEYDOWN:
                 running = options_screen.process_keyboard_input(event)
             if event.type == pygame.QUIT:
-                return False
-    return True
+                return False, options_screen.get_options()
+    return True, options_screen.get_options()
 
 
 def display_main_menu(window: pygame.Surface, clock: pygame.time.Clock):
     menu = Menu(window)
     gameplay_options = GameplayOptions()
     running = True
-    was_closed_normally = display_options_screen(window, clock, gameplay_options) #todo to delete
     while running:
         clock.tick(FPS)
         menu.draw()
         pygame.display.update()
-
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
@@ -56,7 +56,7 @@ def display_main_menu(window: pygame.Surface, clock: pygame.time.Clock):
                     if not was_closed_normally:
                         return
                 if button_selected == MenuButtons.BUTTON_OPTIONS:
-                    was_closed_normally = display_options_screen(window, clock, gameplay_options)
+                    was_closed_normally, gameplay_options = display_options_screen(window, clock, gameplay_options)
                     if not was_closed_normally:
                         return
                 if button_selected == MenuButtons.BUTTON_EXIT:
@@ -69,12 +69,14 @@ def display_main_menu(window: pygame.Surface, clock: pygame.time.Clock):
 
 
 def display_game(window: pygame.Surface, clock: pygame.time.Clock, gameplay_options: GameplayOptions) -> bool:
-    game = Game()
-    game_interface = GameInterface(game, window)
+    game_interface = GameInterface(window, gameplay_options)
 
     running = True
     while running:
         clock.tick(FPS)
+        game_interface.update_display()
+
+        game_interface.perform_ai_move()
         game_interface.update_display()
 
         for event in pygame.event.get():

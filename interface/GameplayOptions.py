@@ -1,4 +1,3 @@
-from checkers.Player import Player
 from enum import Enum, auto
 
 
@@ -40,17 +39,11 @@ class GameplayOptions:
 
     @property
     def top_ai_depth(self):
-        if self.top_player_type == PlayerType.AI:
-            return self._top_ai_depth
-        else:
-            return 0
+        return self._top_ai_depth
 
     @property
     def bottom_ai_depth(self):
-        if self.bottom_player_type == PlayerType.AI:
-            return self._bottom_ai_depth
-        else:
-            return 0
+        return self._bottom_ai_depth
 
     def set_starting_side(self, side: PlayerSide) -> None:
         self._starting_side = side
