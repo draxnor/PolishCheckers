@@ -46,7 +46,7 @@ class GameInterface:
 
     def reset(self):
         self.game.reset()
-        self.game.initialize_from_custom_state()
+        # self.game.initialize_from_custom_state()
         self.selected = None
         self.is_sequence_ongoing = False
 
@@ -61,7 +61,7 @@ class GameInterface:
         else:
             current_ai = self.ai_bottom
         if current_ai.max_depth == 0:
-            best_value = -1
+            # best_value = -1
             rand_int = random.randrange(0, len(self.game.valid_moves))
             best_sequence = self.game.valid_moves[rand_int]
         else:
@@ -111,6 +111,8 @@ class GameInterface:
     def update_display(self) -> None:
         self.graphics.clear_main_window()
         self.graphics.draw_background()
+        if self.game.previous_turn_sequence:
+            self.graphics.draw_last_executed_sequence(self.game.previous_turn_sequence)
         if self.selected is not None:
             self.graphics.draw_valid_moves_of_selected_piece(self.game, self.selected)
         self.graphics.draw_pieces(self.game.board)

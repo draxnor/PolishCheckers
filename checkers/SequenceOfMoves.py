@@ -1,13 +1,15 @@
 from __future__ import annotations
 
-import pygame
+import sys
 
 from .Piece import Piece
 from .Move import Move
 
 
 class SequenceOfMoves:
-    def __init__(self, moving_piece: Piece, sequence_as_list: list[Move] = []) -> None:
+    def __init__(self, moving_piece: Piece, sequence_as_list: list[Move] = None) -> None:
+        if sequence_as_list is None:
+            sequence_as_list = []
         self._moving_piece = moving_piece
         self._sequence = sequence_as_list
 
@@ -69,5 +71,13 @@ class SequenceOfMoves:
     def is_empty(self) -> bool:
         return self.length == 0
 
-    def set_sequence_from_list(self, sequence_as_list: list[Move] = []):
+    def set_sequence_from_list(self, sequence_as_list: list[Move]):
+        if sequence_as_list is None:
+            print('Trying to initialize SequenceOfMoves from empty list.', file=sys.stderr)
+            raise Exception("Initializing SequenceOfMoves from empty list of moves.")
         self._sequence = [move for move in sequence_as_list]
+        self._moving_piece = sequence_as_list[0].moving_piece
+
+    def clear_sequence(self):
+        self._moving_piece = None
+        self._sequence.clear()

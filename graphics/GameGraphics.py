@@ -5,14 +5,14 @@ from checkers.Piece import Piece
 from checkers.SequenceOfMoves import SequenceOfMoves
 from checkers.Move import Move
 from checkers.game_constants import ROWS, COLUMNS
-from .graphics_constants import PIECE_RADIUS, CROWN_COLOR, SQUARE_HEIGHT, SQUARE_WIDTH, HIGHLIGHT_COLOR, \
+from .graphics_constants import PIECE_RADIUS, SQUARE_HEIGHT, SQUARE_WIDTH, HIGHLIGHT_COLOR, \
     MOVE_DOT_RADIUS, CHECKERBOARD_BACKGROUND_COLOR, CHECKERBOARD_SQUARES_COLOR, \
-    WINDOW_WIDTH, WINDOW_HEIGHT, PLAYER_BOTTOM_COLOR, PLAYER_TOP_COLOR, \
-    MENU_BACKGROUND_COLOR, GAME_OVER_MESSAGE_COLOR, CROWN_IMG_PATH, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT, \
+    WINDOW_WIDTH, PLAYER_BOTTOM_COLOR, PLAYER_TOP_COLOR, \
+    GAME_OVER_MESSAGE_COLOR, CROWN_IMG_PATH, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT, \
     PLAYER_TOP_COLOR_NAME, PLAYER_BOTTOM_COLOR_NAME, TURN_INFO_TEXT_SIZE, TURN_INFO_TEXT_COLOR, TURN_INFO_POS,\
-    GAME_WINDOW_HORIZONTAL_OFFSET, GAME_WINDOW_VERTICAL_OFFSET
+    GAME_WINDOW_HORIZONTAL_OFFSET, GAME_WINDOW_VERTICAL_OFFSET, \
+    PREVIOUS_PIECE_POSITION_COLOR, LAST_PERFORMED_SEQUENCE_COLOR
 from checkers.Game import Game
-from checkers.GameState import GameState
 
 
 class GameGraphics:
@@ -148,3 +148,9 @@ class GameGraphics:
             return PLAYER_TOP_COLOR
         elif piece.player == Player.PLAYER_BOTTOM:
             return PLAYER_BOTTOM_COLOR
+
+    def draw_last_executed_sequence(self, seq: SequenceOfMoves) -> None:
+        self.draw_square(*seq.first_move.origin, PREVIOUS_PIECE_POSITION_COLOR)
+        for move in seq.sequence:
+            self.draw_square(*move.destination, LAST_PERFORMED_SEQUENCE_COLOR)
+

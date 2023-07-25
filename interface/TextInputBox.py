@@ -1,9 +1,9 @@
 import sys
-
 import pygame
 from interface.Button import Button
 from graphics.graphics_constants import BUTTON_BG_COLOR, BUTTON_TEXT_COLOR, MENU_BUTTON_TEXT_SIZE, \
     WINDOW_WIDTH, WINDOW_HEIGHT, BUTTON_BG_HIGHLIGHT_COLOR
+
 
 class TextInputBox(Button):
     def __init__(self, left, top, width, height, text: str = '',

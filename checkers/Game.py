@@ -1,4 +1,3 @@
-import pygame
 from .Board import Board
 from .Player import Player
 from .Piece import Piece
@@ -18,6 +17,7 @@ class Game:
         self.turn = player_starting_game
         self.valid_moves = []
         self.current_turn_sequence = None
+        self.previous_turn_sequence = None
         self.state = GameState.ONGOING
         self.non_capture_queens_moves_count = 0
         self.non_capture_moves_count = 0
@@ -32,6 +32,7 @@ class Game:
         new_game.board = self.board.deepcopy()
         new_game.turn = self.turn
         new_game.valid_moves = self.valid_moves.copy()
+        new_game.previous_turn_sequence = self.previous_turn_sequence
         new_game.current_turn_sequence = self.current_turn_sequence
         new_game.state = self.state
         new_game.non_capture_queens_moves_count = self.non_capture_queens_moves_count
@@ -46,9 +47,13 @@ class Game:
         self.board_state_history.append(self.board.deepcopy())
 
     def end_turn(self):
+        self._set_current_sequence_as_previous()
         self.summarize_current_turn()
         self.change_turn()
         self.set_new_turn()
+
+    def _set_current_sequence_as_previous(self):
+        self.previous_turn_sequence = self.current_turn_sequence
 
     def summarize_current_turn(self):
         self._count_queen_moves_for_draw()
@@ -56,9 +61,13 @@ class Game:
         self.board.perform_pieces_promotions()
 
     def set_new_turn(self) -> None:
+        self._clear_current_turn_sequence()
         self.update_valid_moves()
         self.save_board_state()
         self.update_game_state()
+
+    def _clear_current_turn_sequence(self):
+        self.current_turn_sequence = None
 
     def _count_queen_moves_for_draw(self) -> None:
         assert(self.current_turn_sequence is not None, 'Cannot sum up turn where no move was done.')
@@ -160,8 +169,6 @@ class Game:
             if self.current_turn_sequence is None:
                 self.current_turn_sequence = SequenceOfMoves(move_to_make.moving_piece, [move_to_make])
             else:
-                assert(isinstance(self.current_turn_sequence, SequenceOfMoves),
-                       'Could not update current turn sequence after performing single move')
                 self.current_turn_sequence.add_next_move(move_to_make)
         return can_move_be_done, can_sequence_be_continued
 

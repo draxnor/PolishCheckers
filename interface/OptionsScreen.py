@@ -4,8 +4,7 @@ import pygame
 from enum import Enum, auto
 from interface.Button import Button
 from interface.TextInputBox import TextInputBox
-from graphics.graphics_constants import WINDOW_WIDTH, WINDOW_HEIGHT, MENU_BACKGROUND_COLOR, MENU_TEXT_COLOR, \
-    MENU_TEXT_SIZE, MENU_BUTTON_TEXT_SIZE, OPTIONS_TEXT_SIZE
+from graphics.graphics_constants import WINDOW_WIDTH, MENU_BACKGROUND_COLOR, OPTIONS_TEXT_SIZE
 from interface.GameplayOptions import GameplayOptions, PlayerType, PlayerSide
 from interface.TextField import TextField
 
@@ -173,9 +172,17 @@ class OptionsScreen:
         for text_field in self.text_fields.values():
             text_field.draw(self.window)
 
-    def select(self, mouse_pos: tuple[int, int]) -> OptionsButton:
-        button_selected = None
+    def deselect(self):
+        if self.selected is None:
+            return
+        if self.selected == OptionsButton.TEXTBOX_AI_TOP_LVL or self.selected == OptionsButton.TEXTBOX_AI_BOTTOM_LVL:
+            user_input = self.buttons[self.selected].confirm_text_changes()
+            self._change_ai_lvl_from_input(user_input)
         self.selected = None
+
+    def select(self, mouse_pos: tuple[int, int]) -> OptionsButton:
+        self.deselect()
+        button_selected = None
         self.deactivate_all()
         for button in self.buttons.items():
             if button[1].does_collide(mouse_pos):
@@ -223,16 +230,20 @@ class OptionsScreen:
             else:
                 return True
         try:
-            text = self.buttons[self.selected].process_keydown(event)
-            new_ai_lvl = int(text)
-            if self.selected == OptionsButton.TEXTBOX_AI_TOP_LVL:
-                self.options.set_top_ai_depth(new_ai_lvl)
-            elif self.selected == OptionsButton.TEXTBOX_AI_BOTTOM_LVL:
-                self.options.set_bottom_ai_depth(new_ai_lvl)
+            user_input = self.buttons[self.selected].process_keydown(event)
+            self._change_ai_lvl_from_input(user_input)
             return True
         except AttributeError:
             print('Cannot reject text changes in "OptionsScreen.process_keyboard_input()"', file=sys.stderr)
         except ValueError:
             print('Error while converting AI difficulty from text to number', file=sys.stderr)
-        except TypeError:
-            print('Was trying to convert:', text, ord(text), 'to integer.', file=sys.stderr)
+
+    def _change_ai_lvl_from_input(self, user_input: str):
+        try:
+            new_lvl = int(user_input)
+            if self.selected == OptionsButton.TEXTBOX_AI_TOP_LVL:
+                self.options.set_top_ai_depth(new_lvl)
+            elif self.selected == OptionsButton.TEXTBOX_AI_BOTTOM_LVL:
+                self.options.set_bottom_ai_depth(new_lvl)
+        except ValueError:
+            print('Error occurred while trying to convert text:', user_input, ord(user_input), 'to integer.', file=sys.stderr)
