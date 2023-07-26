@@ -110,13 +110,45 @@ Entering incorrect characters ends up in no changes.
 Any number higher than 9 will be trimmed so that first digit will be set as your difficulty level.
 
 
-## Gameplay
+# Gameplay
 
-Podświetlanie poprzedniej tury
+## Controls
+- To move a piece, left-click on it and then press its target position.
+- To cancel selection, left-click on any point on board or simply select other piece.
+- While in-game, you can press ESC to go back to Main Menu
+- While in-game, you can press SPACE to restart the game with the same settings
+- Press ESC in Main Menu to exit the app
+- Press ESC in Options to go back to Main Menu
 
-Podświetlanie dozwolonych ruchów wybranego piona
+## In-game features
+- Any time in a game you can restart it by clicking SPACE or escape to Main Menu using ESC.
+- Selecting piece with left-click starts highlighting all its valid moves. 
+If selected piece has no valid moves, it is automatically unselected.
+Possible moves are highlighted in following way:
+  - First next possible move/jump destination is highlighted as light-green square.
+  - All possible subsequent jumps in a sequence (that can be performed in the same turn) are highlighted as light-green dots/circles.
 
-Restart gry SPACE
+*Red piece selected - 2 destinations possible*
 
-Powrót do Menu ESCAPE
+![Highlight normal move](./showoff/pngs/highlighting_moves.png)
+
+*Blue piece selected - 1 sequence, composed of 2 consecutive jumps possible*
+
+![Highlight jumps](./showoff/pngs/highlighting_jumps.png)
+
+
+- Starting from second turn, the sequence of moves made by the opponent during the last turn is highlighted in the following way:
+  - Previous position of moving piece is highlighted as amaranth (darker pink)
+  - All squares, where enemy piece landed between consecutive jumps are highlighted as bright orange.
+
+*Blue turn. Highlighting squares of red piece origin and destination.*
+
+![Highlight previous move](./showoff/pngs/highlighting_previous_moves.png)
+
+*Red turn. Highlighting square of blue piece origin and all squares that blue piece landed on while performing a sequence of moves.*
+
+![Highlight previous jumps sequence](./showoff/pngs/highlighting_previous_moves_jumps.png)
+
+
+
 
