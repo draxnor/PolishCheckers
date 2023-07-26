@@ -9,7 +9,10 @@ Project built as Python and OOP practice.
 
 ### Sample gameplay
 
- ![til](./showoff/gifs/ai_v_h.gif)
+<div align="center">
+  <video src="showoff/mp4/ai_v_h.mp4" width="400" />
+</div>
+
 
 
 ## Game rules
