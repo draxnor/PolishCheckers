@@ -194,11 +194,11 @@ class Game:
     def is_game_over(self):
         return self.state != GameState.ONGOING
 
-    def initialize_from_custom_state(self):
+    def _initialize_from_custom_state(self):
         for row in range(10):
             for col in range(10):
                 self.board.board[row][col] = 0
-        self.board.board[3][2] = Piece(3,2,Player.PLAYER_TOP)
+        self.board.board[3][2] = Piece(3, 2, Player.PLAYER_TOP)
         self.board.board[3][2].promote()
         self.board.board[1][0] = Piece(1, 0, Player.PLAYER_BOTTOM)
         self.board.board[0][3] = Piece(0, 3, Player.PLAYER_BOTTOM)
