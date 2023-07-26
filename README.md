@@ -9,7 +9,8 @@ Project built as Python and OOP practice.
 
 ### Sample gameplay
 
- ![til](./showoff/gifs/ai_v_h.gif)
+https://github.com/draxnor/PolishCheckers/assets/28366625/2edd9a2f-7c8b-4443-92c7-b021e07130b1
+
 
 
 ## Game rules
@@ -50,7 +51,7 @@ For all other details on rules, please visit link attached at the beginning of t
 Game options can be set by selecting:
 - Main Menu -> Options 
 
-![til](./showoff/gifs/options.gif)
+https://github.com/draxnor/PolishCheckers/assets/28366625/dd0affd0-9575-4662-b5f2-ca48303ca0e3
 
 
 There one can set:
@@ -63,14 +64,25 @@ There one can set:
 Game offers 3 general game modes:
 - Human vs Human (default)
 
-![til](./showoff/mp4/h_v_h.mp4)
+
+https://github.com/draxnor/PolishCheckers/assets/28366625/4c3075f6-20db-4409-bf53-3b4c23acef17
+
+
+
 - Human vs AI
 
-![til](./showoff/gifs/ai_v_h.gif)
+
+
+https://github.com/draxnor/PolishCheckers/assets/28366625/8220df85-ef27-44e1-b59b-dc1415a43899
+
+
 
 - AI vs AI
 
-![til](./showoff/gifs/ai_v_ai.gif)
+
+
+https://github.com/draxnor/PolishCheckers/assets/28366625/6f5d3afa-aca4-4545-86ed-20fdcd506a11
+
 
 
 ### Starting player
