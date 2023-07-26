@@ -188,9 +188,7 @@ class Game:
 
     def execute_sequence_and_set_new_turn(self, sequence_to_make: SequenceOfMoves) -> bool:
         success = self.execute_sequence(sequence_to_make)
-        self.summarize_current_turn()
-        self.change_turn()
-        self.set_new_turn()
+        self.end_turn()
         return success
 
     def is_game_over(self):
