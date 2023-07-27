@@ -5,6 +5,8 @@ AI is using minimax algorithm with alpha-beta pruning.
 
 Project built as Python and OOP practice.
 
+To play game on your computer, you can download './executable' folder and run file './executable/main.exe'
+
 # General features
 
 ### Sample gameplay
